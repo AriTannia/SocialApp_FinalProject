@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_personal"
+        android:title="Cá Nhân" />
+    <item
+        android:id="@+id/action_other_users"
+        android:title="Người dùng khác" />
+    <item
+        android:id="@+id/action_logout"
+        android:title="Đăng Xuất" />
+</menu>

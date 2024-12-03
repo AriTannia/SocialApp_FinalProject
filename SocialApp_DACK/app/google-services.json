@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "691347409559",
+    "firebase_url": "https://socialappdack-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "socialappdack",
+    "storage_bucket": "socialappdack.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691347409559:android:c71dc0aa888436c503b7d2",
+        "android_client_info": {
+          "package_name": "tannguyen.st.ueh.edu.vn.socialapp_dack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "691347409559-arps2snj92jtp2r1ke3mj5au4j8dcjg2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tannguyen.st.ueh.edu.vn.socialapp_dack",
+            "certificate_hash": "d48530438ad8466c5ec20dd313985a25b1430730"
+          }
+        },
+        {
+          "client_id": "691347409559-klmovgnm1m6p80156hq3dof2mssdlq7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6nF32IBSs5Qw1vs4cix7L-z28oGUeNjI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "691347409559-klmovgnm1m6p80156hq3dof2mssdlq7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

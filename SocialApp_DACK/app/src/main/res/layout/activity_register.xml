@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RegisterActivity">
+
+    <!-- ScrollView chứa nội dung -->
+    <ScrollView
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!-- Tiêu đề -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:text="Tạo Tài Khoản"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- Logo -->
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp"
+                android:src="@drawable/error_image" />
+
+            <!-- Tên của bạn -->
+            <EditText
+                android:id="@+id/mNameedt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/edit_text_background"
+                android:hint="Tên Của Bạn"
+                android:padding="12dp" />
+
+            <!-- Email -->
+            <EditText
+                android:id="@+id/mEmailedt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/edit_text_background"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:padding="12dp" />
+
+            <!-- Mật khẩu -->
+            <EditText
+                android:id="@+id/mPsdedt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/edit_text_background"
+                android:hint="Mật Khẩu"
+                android:inputType="textPassword"
+                android:padding="12dp" />
+
+            <!-- Nút tạo tài khoản -->
+            <Button
+                android:id="@+id/mRegisterbtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/button_background"
+                android:text="Tạo Tài Khoản"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="16dp"
+                android:background="#E0E0E0" />
+
+            <!-- Hoặc -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"
+                android:text="Hoặc"
+                android:textColor="#000000"
+                android:textSize="14sp" />
+
+            <!-- Đăng nhập -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nếu bạn đã có tài khoản? Hãy tiến hành "
+                    android:textColor="#000000"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tv_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:text="ĐĂNG NHẬP"
+                    android:textColor="#0000FF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ProgressBar ở giữa màn hình -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+</FrameLayout>
