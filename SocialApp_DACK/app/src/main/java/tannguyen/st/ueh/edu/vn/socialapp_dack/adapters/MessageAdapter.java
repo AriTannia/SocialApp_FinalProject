@@ -40,13 +40,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         MessageModel message = messageList.get(position);
         holder.messageTv.setText(message.getMessage());
 
-        // Hiển thị khác nhau tùy theo sender
+        // Kiểm tra người gửi và thay đổi căn chỉnh
         if (message.getSender().equals(myUid)) {
+            // Người gửi là chính mình
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_sender);
+            holder.messageTv.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END); // Căn phải
         } else {
+            // Người nhận
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_receiver);
+            holder.messageTv.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START); // Căn trái
         }
     }
+
 
     @Override
     public int getItemCount() {

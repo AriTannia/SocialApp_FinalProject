@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,6 +59,8 @@ public class ChatActivity extends AppCompatActivity {
         messageEt = findViewById(R.id.messageEt);
         sendBtn = findViewById(R.id.sendBtn);
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
+        chatRecyclerView.setHasFixedSize(true);
+        chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Firebase initialization
         mAuth = FirebaseAuth.getInstance();
@@ -84,6 +87,9 @@ public class ChatActivity extends AppCompatActivity {
                 Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn trống", Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Gọi hàm để tải tin nhắn
+        loadMessages();
     }
 
     private void loadReceiverInfo(String hisUid) {
