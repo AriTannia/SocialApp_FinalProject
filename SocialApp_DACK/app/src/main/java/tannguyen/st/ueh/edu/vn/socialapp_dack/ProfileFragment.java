@@ -37,7 +37,9 @@ import androidx.appcompat.app.AlertDialog;
 
 import java.util.HashMap;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class ProfileFragment extends Fragment {
 

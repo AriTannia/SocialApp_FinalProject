@@ -43,7 +43,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;

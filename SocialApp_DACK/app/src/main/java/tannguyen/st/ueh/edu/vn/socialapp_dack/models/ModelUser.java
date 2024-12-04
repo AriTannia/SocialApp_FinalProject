@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack.Model;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.models;
 
 public class ModelUser {
     private String name;

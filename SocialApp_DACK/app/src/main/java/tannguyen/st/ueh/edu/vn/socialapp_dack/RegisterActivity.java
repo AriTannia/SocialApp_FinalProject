@@ -20,7 +20,9 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class RegisterActivity extends AppCompatActivity {
 

@@ -157,6 +157,7 @@ public class HomeActivity extends AppCompatActivity {
         return true;
     }
 
+
     private void signOut() {
         mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
@@ -171,4 +172,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
     }
+
+
 }

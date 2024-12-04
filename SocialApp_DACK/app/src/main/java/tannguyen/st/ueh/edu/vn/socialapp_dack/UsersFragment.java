@@ -23,7 +23,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterUsers;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class UsersFragment extends Fragment {
 
@@ -93,6 +94,7 @@ public class UsersFragment extends Fragment {
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ModelUser user = ds.getValue(ModelUser.class);
+
                     if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
                         if (user.getName().toLowerCase().contains(query.toLowerCase()) ||
                                 user.getEmail().toLowerCase().contains(query.toLowerCase())) {
