@@ -62,14 +62,13 @@ public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.MyHolder>{
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Khởi tạo Intent để mở ChatActivity
+                // Mở ChatActivity và truyền UID của người dùng
                 Intent intent = new Intent(context, ChatActivity.class);
-
-                intent.putExtra("hisUid", hisUID);
-                context.startActivity(intent);
-
+                intent.putExtra("hisUid", hisUID); // Gửi UID của người nhận
+                context.startActivity(intent);    // Chuyển sang ChatActivity
             }
         });
+
     }
 
     @Override

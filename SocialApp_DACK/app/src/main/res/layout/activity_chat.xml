@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -21,8 +20,7 @@
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_default"
-            />
+            android:src="@drawable/ic_default" />
 
         <!-- Receiver name and status -->
         <LinearLayout
@@ -53,6 +51,16 @@
 
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
+
+    <!-- RecyclerView for chat messages -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_above="@id/chatLayout"
+        android:layout_below="@id/toolbar"
+        android:padding="10dp"
+        android:clipToPadding="false" />
 
     <!-- Message Input Layout -->
     <LinearLayout

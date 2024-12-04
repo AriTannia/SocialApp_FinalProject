@@ -141,10 +141,6 @@ public class HomeActivity extends AppCompatActivity {
             signOut();
             return true;
 
-        } else if (id == R.id.nav_chat) { // Mục menu "Chat"
-            Intent intent = new Intent(HomeActivity.this, ChatActivity.class); // Chuyển sang ChatActivity
-            startActivity(intent);
-            return true;
         }
 
         return super.onOptionsItemSelected(item);
