@@ -1,9 +1,11 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -40,18 +42,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         MessageModel message = messageList.get(position);
         holder.messageTv.setText(message.getMessage());
 
-        // Kiểm tra người gửi và thay đổi căn chỉnh
+        // Kiểm tra người gửi
         if (message.getSender().equals(myUid)) {
-            // Người gửi là chính mình
+            // Tin nhắn gửi: căn phải
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_sender);
-            holder.messageTv.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END); // Căn phải
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
+            params.gravity = Gravity.END;
+            holder.messageTv.setLayoutParams(params);
         } else {
-            // Người nhận
+            // Tin nhắn nhận: căn trái
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_receiver);
-            holder.messageTv.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START); // Căn trái
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
+            params.gravity = Gravity.START;
+            holder.messageTv.setLayoutParams(params);
         }
     }
-
 
     @Override
     public int getItemCount() {
