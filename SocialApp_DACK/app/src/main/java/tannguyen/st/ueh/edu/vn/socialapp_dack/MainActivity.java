@@ -38,6 +38,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
@@ -101,16 +106,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-
-        // Xử lý sự kiện khi nhấn vào "ĐĂNG KÝ"
-        tvRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-                startActivity(intent);
-            }
-        });
-
         btnLoginGoogle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,22 +149,66 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        // Người dùng đăng nhập thành công
-                        Toast.makeText(MainActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                        // Kiểm tra xem người dùng đã có thông tin trong database chưa
+                        if (user != null) {
+                            checkUserInDatabase(user); // Kiểm tra và lưu thông tin nếu cần
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(e -> {
+                    Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void checkUserInDatabase(FirebaseUser user) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    // Nếu người dùng chưa có thông tin trong database, lưu thông tin
+                    saveUserToDatabase(user);
+                } else {
+                    // Người dùng đã có thông tin trong database, không làm gì
+                    Toast.makeText(MainActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Lỗi khi kiểm tra dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Lưu thông tin người dùng vào database nếu chưa tồn tại
+    private void saveUserToDatabase(FirebaseUser user) {
+        String name = user.getDisplayName();  // Lấy tên từ tài khoản Google
+        String email = user.getEmail();  // Lấy email từ tài khoản Google
+        String password = "";  // Mật khẩu sẽ không được lưu vì đây là đăng nhập qua Google
+        String uid = user.getUid();  // UID của người dùng
+
+        // Tạo đối tượng User
+        User newUser = new User(name, email, password, "", "", uid, "");
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+        userRef.setValue(newUser)
+                .addOnCompleteListener(databaseTask -> {
+                    if (databaseTask.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "Đăng ký và đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                         startActivity(intent);
                         finish();
                     } else {
-                        Toast.makeText(MainActivity.this, "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(MainActivity.this, " " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Lỗi khi lưu thông tin người dùng: " + databaseTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
-
     private void setupLoginButton() {
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();

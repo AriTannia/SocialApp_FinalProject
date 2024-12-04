@@ -4,16 +4,24 @@ public class User {
     private String name;
     private String email;
     private String password;  // Thêm thuộc tính password
+    private String phone;     // Thêm thuộc tính phone
+    private String image;     // Thêm thuộc tính image (URL)
+    private String cover;
+    private String uid;       // Thêm thuộc tính uid
 
     // Constructor mặc định (Firebase yêu cầu phải có constructor mặc định)
     public User() {
     }
 
     // Constructor có tham số để tạo đối tượng User
-    public User(String name, String email, String password) {
+    public User(String name, String email, String password, String phone, String image, String uid, String coverIv) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.phone = phone;
+        this.image = image;
+        this.uid = uid;
+        this.cover = coverIv;
     }
 
     // Getter và Setter cho các thuộc tính
@@ -40,5 +48,36 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-}
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getCoverIv() {
+        return cover;
+    }
+
+    public void setCoverIv(String coverIv) {
+        this.cover = coverIv;
+    }
+}

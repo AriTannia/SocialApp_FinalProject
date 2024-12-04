@@ -80,60 +80,89 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    // Need To Change from other (5:40 - 03/12/2024)
     private void registerUser(String name, String email, String password) {
         progressDialog.setMessage("Đang đăng ký...");
         progressDialog.show();
 
-        // Thực hiện tạo người dùng với Firebase Authentication
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     progressDialog.dismiss();
                     if (task.isSuccessful()) {
-                        // Đăng ký thành công
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            // Cập nhật thông tin người dùng (nếu cần)
-                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                    .setDisplayName(name)
-                                    .build();
-
-                            // Cập nhật profile người dùng
-                            user.updateProfile(profileUpdates)
-                                    .addOnCompleteListener(profileTask -> {
-                                        if (profileTask.isSuccessful()) {
-                                            // Lưu thông tin người dùng vào Firebase Realtime Database
-                                            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
-                                            User newUser = new User(name, email, password); // Tạo đối tượng User
-
-                                            // Lưu thông tin người dùng vào Realtime Database
-                                            userRef.setValue(newUser)
-                                                    .addOnCompleteListener(databaseTask -> {
-                                                        if (databaseTask.isSuccessful()) {
-                                                            // Đăng ký thành công và lưu thông tin vào Realtime Database
-                                                            Toast.makeText(RegisterActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                                                            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                                            startActivity(intent);
-                                                            finish();
-                                                        } else {
-                                                            Toast.makeText(RegisterActivity.this, "Lỗi lưu dữ liệu vào Realtime Database: " + databaseTask.getException().getMessage(), Toast.LENGTH_LONG).show();
-                                                        }
-                                                    });
-                                        } else {
-                                            Toast.makeText(RegisterActivity.this, "Lỗi cập nhật thông tin người dùng: " + profileTask.getException().getMessage(), Toast.LENGTH_LONG).show();
-                                        }
-                                    });
+                            updateProfile(user, name, email, password);
                         }
                     } else {
-                        // Đăng ký thất bại
-                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Lỗi không xác định";
-                        Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + errorMessage, Toast.LENGTH_LONG).show();
+                        handleRegistrationFailure(task); // (2)
                     }
                 })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(RegisterActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                .addOnFailureListener(e -> handleFailure(e)); // (5)
+    }
+
+    // Cập nhật thông tin người dùng ==> Dùng để lưu vào db sau khi đăng ký
+    private void updateProfile(FirebaseUser user, String name, String email, String password) {
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName(name)
+                .build();
+
+        user.updateProfile(profileUpdates)
+                .addOnCompleteListener(profileTask -> {
+                    if (profileTask.isSuccessful()) {
+                        saveUserToDatabase(user, name, email, password);
+                    } else {
+                        handleProfileUpdateFailure(profileTask); // (3)
+                    }
                 });
     }
+
+    private void saveUserToDatabase(FirebaseUser user, String name, String email, String password) {
+        // Lấy User id từ Firebase User
+        String uid = user.getUid();
+        User newUser = new User(name, email, password, "", "", uid, ""); // Add uid here
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+
+        userRef.setValue(newUser)
+                .addOnCompleteListener(databaseTask -> {
+                    if (databaseTask.isSuccessful()) {
+                        handleSuccessfulRegistration(); // (1)
+                    } else {
+                        handleDatabaseSaveFailure(databaseTask); // (4)
+                    }
+                });
+    }
+
+    // Xử lý khi đăng ký thành công (1)
+    private void handleSuccessfulRegistration() {
+        Toast.makeText(RegisterActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    // Xử lý khi đăng ký thất bại - thuộc else của onSuccess (2)
+    private void handleRegistrationFailure(Task<AuthResult> task) {
+        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Lỗi không xác định";
+        Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + errorMessage, Toast.LENGTH_LONG).show();
+    }
+
+    // Xử lý khi cập nhật profile bị lỗi (3)
+    private void handleProfileUpdateFailure(Task<Void> profileTask) {
+        Toast.makeText(RegisterActivity.this, "Lỗi cập nhật thông tin người dùng: " + profileTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    // Xử lý khi lưu vào db bị lỗi (4)
+    private void handleDatabaseSaveFailure(Task<Void> databaseTask) {
+        Toast.makeText(RegisterActivity.this, "Lỗi lưu dữ liệu vào Realtime Database: " + databaseTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    // Xử lý khi đăng ký bị lỗi (thuộc onFailture) (5)
+    private void handleFailure(Exception e) {
+        progressDialog.dismiss();
+        Toast.makeText(RegisterActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+    }
+
 
 }
