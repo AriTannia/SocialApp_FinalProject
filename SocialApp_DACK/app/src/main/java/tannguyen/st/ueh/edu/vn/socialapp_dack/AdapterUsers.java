@@ -15,12 +15,14 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+
 public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.MyHolder>{
 
     Context context;
-    List<User> userList;
+    List<ModelUser> userList;
 
-    public AdapterUsers(Context context, List<User> userList) {
+    public AdapterUsers(Context context, List<ModelUser> userList) {
         this.context = context;
         this.userList = userList;
     }

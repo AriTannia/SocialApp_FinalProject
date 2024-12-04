@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,6 +20,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.MenuItemCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,6 +30,7 @@ import android.widget.Button;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -43,18 +46,21 @@ public class HomeActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
 
+    private BottomNavigationView bottomNavigationView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.Home_main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(0,systemBars.top,0,0);
             return insets;
         });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
         setSupportActionBar(toolbar);
 
         // Khởi tạo FirebaseAuth
@@ -62,6 +68,58 @@ public class HomeActivity extends AppCompatActivity {
 
         // Khởi tạo GoogleSignInClient
         mGoogleSignInClient = GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build());
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+
+            int itemId = item.getItemId(); // Lấy ID của menu được chọn
+            if (itemId == R.id.action_home) {
+
+            } else if (itemId == R.id.action_add) {
+
+            } else if (itemId == R.id.action_personal) {
+                selectedFragment = new ProfileFragment();
+            }
+            // Kiểm tra nếu selectedFragment không null, thay thế fragment hiện tại
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+            }
+
+            return true;
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_logout) {
+            // Thực hiện signOut khi người dùng chọn Logout
+            signOut();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void openUsersFragment(String query) {
+        // Tạo hoặc lấy fragment hiện tại
+        UsersFragment fragment = (UsersFragment) getSupportFragmentManager().findFragmentByTag("USERS_FRAGMENT");
+        Log.d("Fragment hiện tại", String.valueOf(fragment));
+
+        if (fragment == null) {
+            // Nếu chưa có fragment, tạo mới và thay thế
+            fragment = new UsersFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment, "USERS_FRAGMENT")
+                    .addToBackStack(null)
+                    .commit();
+        }
+
+        fragment.searchUsers(query);
     }
 
     @Override
@@ -75,8 +133,8 @@ public class HomeActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                if(!TextUtils.isEmpty(query.trim())) {
-                    openUsersFragment(query);
+                if (!TextUtils.isEmpty(query.trim())) {
+                    openUsersFragment(query); // Gọi tìm kiếm với từ khóa
                 } else {
                     openUsersFragment(""); // Nếu không có từ khóa, lấy tất cả người dùng
                 }
@@ -85,8 +143,8 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(!TextUtils.isEmpty(newText.trim())) {
-                    openUsersFragment(newText);
+                if (!TextUtils.isEmpty(newText.trim())) {
+                    openUsersFragment(newText); // Cập nhật tìm kiếm theo mỗi ký tự nhập vào
                 } else {
                     openUsersFragment(""); // Nếu không có từ khóa, lấy tất cả người dùng
                 }
@@ -95,56 +153,6 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         return true;
-    }
-
-    private void openUsersFragment(String query) {
-        // Tạo hoặc lấy fragment hiện tại
-        UsersFragment fragment = (UsersFragment) getSupportFragmentManager().findFragmentByTag("USERS_FRAGMENT");
-        if (fragment == null) {
-            fragment = new UsersFragment();
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, fragment, "USERS_FRAGMENT")
-                    .addToBackStack(null)
-                    .commit();
-        }
-        fragment.searchUsers(query); // Gọi phương thức tìm kiếm trong fragment
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_personal) {
-            Toast.makeText(this, "Thông tin cá nhân được chọn", Toast.LENGTH_SHORT).show();
-
-            // Tạo đối tượng Fragment UserFragment
-            ProfileFragment profileFragment = new ProfileFragment();
-
-            // Thực hiện thay thế Fragment hiện tại bằng UserFragment
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, profileFragment) // R.id.fragment_container là nơi chứa Fragment trong Activity
-                    .addToBackStack(null) // Thêm vào back stack để quay lại Fragment trước đó
-                    .commit();
-
-
-            return true;
-        } else if (id == R.id.action_other_users) {
-            Toast.makeText(this, "Người dùng khác được chọn", Toast.LENGTH_SHORT).show();
-
-            UsersFragment usersFragment = new UsersFragment();
-
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, usersFragment)
-                    .addToBackStack(null)
-                    .commit();
-
-            return true;
-        } else if (id == R.id.action_logout) {
-            // Thực hiện signOut khi người dùng chọn Logout
-            signOut();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void signOut() {
