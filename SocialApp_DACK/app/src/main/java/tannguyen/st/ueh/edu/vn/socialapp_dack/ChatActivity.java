@@ -10,7 +10,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,17 +33,22 @@ public class ChatActivity extends AppCompatActivity {
 
     // Views from XML
     Toolbar toolbar;
-    CircularImageView profileIv; // Profile image of the receiver
-    TextView nameTv, userStatusTv; // Receiver name and status
-    EditText messageEt; // Input message
-    ImageButton sendBtn; // Send button
-    RecyclerView chatRecyclerView; // RecyclerView to display chat messages
+    CircularImageView profileIv;
+    TextView nameTv, userStatusTv;
+    EditText messageEt;
+    ImageButton sendBtn;
+    RecyclerView chatRecyclerView;
 
+    // Firebase references
     FirebaseAuth mAuth;
     DatabaseReference userRef, chatRef;
 
-    String hisUid; // UID of the receiver
-    String myUid;  // UID of the sender
+    String hisUid; // Receiver's UID
+    String myUid;  // Sender's UID
+
+    // Adapter and message list
+    MessageAdapter adapter;
+    List<MessageModel> messageList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,26 +63,31 @@ public class ChatActivity extends AppCompatActivity {
         messageEt = findViewById(R.id.messageEt);
         sendBtn = findViewById(R.id.sendBtn);
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
+
         chatRecyclerView.setHasFixedSize(true);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Firebase initialization
+        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         myUid = mAuth.getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         chatRef = FirebaseDatabase.getInstance().getReference("Chats");
 
+        messageList = new ArrayList<>();
+        adapter = new MessageAdapter(ChatActivity.this, messageList);
+        chatRecyclerView.setAdapter(adapter);
+
         // Set up Toolbar
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // Disable default title
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Get receiver UID from Intent
         hisUid = getIntent().getStringExtra("hisUid");
 
-        // Load receiver info from Firebase
+        // Load receiver's information
         loadReceiverInfo(hisUid);
 
-        // Set click listener for Send button
+        // Set send button click listener
         sendBtn.setOnClickListener(v -> {
             String message = messageEt.getText().toString().trim();
             if (!TextUtils.isEmpty(message)) {
@@ -88,7 +97,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        // Gọi hàm để tải tin nhắn
+        // Load chat messages
         loadMessages();
     }
 
@@ -101,13 +110,12 @@ public class ChatActivity extends AppCompatActivity {
                     String image = snapshot.child("image").getValue(String.class);
                     String status = snapshot.child("status").getValue(String.class); // Optional: online/offline
 
-                    // Update UI
                     nameTv.setText(name);
                     userStatusTv.setText(status != null ? status : "offline");
                     if (image != null) {
                         Picasso.get().load(image).placeholder(R.drawable.ic_default).into(profileIv);
                     } else {
-                        profileIv.setImageResource(R.drawable.ic_default); // Default image if no profile picture
+                        profileIv.setImageResource(R.drawable.ic_default);
                     }
                 } else {
                     Toast.makeText(ChatActivity.this, "Người dùng không tồn tại", Toast.LENGTH_SHORT).show();
@@ -124,42 +132,32 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage(String message) {
         String timestamp = String.valueOf(System.currentTimeMillis());
 
-        // Tạo HashMap chứa nội dung tin nhắn
         HashMap<String, Object> chatMessage = new HashMap<>();
         chatMessage.put("sender", myUid);
         chatMessage.put("receiver", hisUid);
         chatMessage.put("message", message);
         chatMessage.put("timestamp", timestamp);
 
-        // Ghi dữ liệu vào Firebase
         chatRef.push().setValue(chatMessage)
-                .addOnSuccessListener(aVoid -> {
-                    // Xóa nội dung input sau khi gửi
-                    messageEt.setText("");
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnSuccessListener(aVoid -> messageEt.setText("")) // Clear the input field after sending
+                .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void loadMessages() {
         chatRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<MessageModel> messageList = new ArrayList<>();
+                messageList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     MessageModel message = ds.getValue(MessageModel.class);
 
-                    // Hiển thị tin nhắn giữa myUid và hisUid
                     if ((message.getSender().equals(myUid) && message.getReceiver().equals(hisUid)) ||
                             (message.getSender().equals(hisUid) && message.getReceiver().equals(myUid))) {
                         messageList.add(message);
                     }
                 }
-                // Cập nhật adapter của RecyclerView
-                MessageAdapter adapter = new MessageAdapter(ChatActivity.this, messageList);
-                chatRecyclerView.setAdapter(adapter);
-                chatRecyclerView.scrollToPosition(messageList.size() - 1); // Tự động cuộn xuống
+                adapter.notifyDataSetChanged();
+                chatRecyclerView.scrollToPosition(messageList.size() - 1);
             }
 
             @Override
@@ -168,6 +166,4 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
-
-
 }
