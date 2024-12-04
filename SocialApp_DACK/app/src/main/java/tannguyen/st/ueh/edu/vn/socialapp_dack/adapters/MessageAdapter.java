@@ -41,30 +41,32 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         MessageModel message = messageList.get(position);
 
+        // Set the message text
         holder.messageTv.setText(message.getMessage());
 
-        // Align messages and show "Seen/Delivered" based on sender or receiver
+        // Determine if the message is sent by the current user
         if (message.getSender().equals(myUid)) {
-            // Message sent by current user
+            // Sent messages: Align to the right
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_sender);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
             params.gravity = Gravity.END;
             holder.messageTv.setLayoutParams(params);
 
-            // Display "Seen" or "Delivered"
+            // Show "Seen" or "Delivered" status for sent messages
             if (message.isSeen()) {
                 holder.statusTv.setText("Seen");
             } else {
                 holder.statusTv.setText("Delivered");
             }
+            holder.statusTv.setVisibility(View.VISIBLE);
         } else {
-            // Message received by current user
+            // Received messages: Align to the left
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_receiver);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
             params.gravity = Gravity.START;
             holder.messageTv.setLayoutParams(params);
 
-            // Hide status for received messages
+            // Hide the status for received messages
             holder.statusTv.setVisibility(View.GONE);
         }
     }
@@ -80,7 +82,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             messageTv = itemView.findViewById(R.id.messageTv);
-            statusTv = itemView.findViewById(R.id.statusTv); // Added for "Seen/Delivered" status
+            statusTv = itemView.findViewById(R.id.statusTv); // For "Seen/Delivered" status
         }
     }
 }
