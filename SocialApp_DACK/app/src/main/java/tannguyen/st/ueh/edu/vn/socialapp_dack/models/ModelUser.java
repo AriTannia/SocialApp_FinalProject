@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:SocialApp_DACK/app/src/main/java/tannguyen/st/ueh/edu/vn/socialapp_dack/Model/ModelUser.java
-package tannguyen.st.ueh.edu.vn.socialapp_dack.Model;
-========
 package tannguyen.st.ueh.edu.vn.socialapp_dack.models;
->>>>>>>> origin/dev:SocialApp_DACK/app/src/main/java/tannguyen/st/ueh/edu/vn/socialapp_dack/models/ModelUser.java
 
 public class ModelUser {
     private String name;

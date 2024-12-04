@@ -63,7 +63,6 @@ public class UsersFragment extends Fragment {
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ModelUser user = ds.getValue(ModelUser.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
-                    ModelUser user = ds.getValue(ModelUser.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
 
                     if (user != null && fUser != null) {
                         // Kiểm tra xem người dùng hiện tại có khớp với user trong danh sách không
@@ -95,7 +94,7 @@ public class UsersFragment extends Fragment {
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ModelUser user = ds.getValue(ModelUser.class);
-                    ModelUser user = ds.getValue(ModelUser.class);
+
                     if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
                         if (user.getName().toLowerCase().contains(query.toLowerCase()) ||
                                 user.getEmail().toLowerCase().contains(query.toLowerCase())) {

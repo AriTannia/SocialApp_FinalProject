@@ -53,5 +53,4 @@ dependencies {
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.mikhaellopez:circularimageview:4.3.0")
-    implementation("com.mikhaellopez:circularimageview:4.3.0")
 }

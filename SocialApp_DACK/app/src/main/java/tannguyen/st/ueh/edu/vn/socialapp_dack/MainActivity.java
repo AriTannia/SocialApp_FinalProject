@@ -43,7 +43,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
@@ -197,7 +197,6 @@ public class MainActivity extends AppCompatActivity {
         String uid = user.getUid();  // UID của người dùng
 
         // Tạo đối tượng User
-        ModelUser newUser = new ModelUser(name, email, password, "", "", uid, "");
         ModelUser newUser = new ModelUser(name, email, password, "", "", uid, "");
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
