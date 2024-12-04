@@ -1,18 +1,20 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.models;
 
 public class MessageModel {
+    private String messageId; // ID duy nhất của tin nhắn
     private String sender;
     private String receiver;
     private String message;
     private String timestamp;
-    private boolean isSeen; // New field added
+    private boolean isSeen; // Đã xem hay chưa
 
     // Default constructor (required for Firebase)
     public MessageModel() {
     }
 
     // Constructor with all fields
-    public MessageModel(String sender, String receiver, String message, String timestamp, boolean isSeen) {
+    public MessageModel(String messageId, String sender, String receiver, String message, String timestamp, boolean isSeen) {
+        this.messageId = messageId;
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
@@ -21,6 +23,14 @@ public class MessageModel {
     }
 
     // Getters and Setters
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
     public String getSender() {
         return sender;
     }

@@ -74,7 +74,7 @@ public class ChatActivity extends AppCompatActivity {
         chatRef = FirebaseDatabase.getInstance().getReference("Chats");
 
         messageList = new ArrayList<>();
-        adapter = new MessageAdapter(ChatActivity.this, messageList);
+        adapter = new MessageAdapter(ChatActivity.this, messageList, chatRef, myUid); // Pass chatRef and myUid
         chatRecyclerView.setAdapter(adapter);
 
         // Set up Toolbar
@@ -111,10 +111,12 @@ public class ChatActivity extends AppCompatActivity {
                     String name = snapshot.child("name").getValue(String.class);
                     String image = snapshot.child("image").getValue(String.class);
 
-                    nameTv.setText(name);
-                    if (image != null) {
-                        Picasso.get().load(image).placeholder(R.drawable.ic_default).into(profileIv);
+                    nameTv.setText(name != null ? name : "No Name"); // Nếu không có tên, hiển thị mặc định
+                    if (!TextUtils.isEmpty(image)) {
+                        // Nếu có ảnh, tải ảnh bằng Picasso
+                        Picasso.get().load(image).placeholder(R.drawable.error_image).into(profileIv);
                     } else {
+                        // Nếu không có ảnh, đặt ảnh mặc định
                         profileIv.setImageResource(R.drawable.ic_default);
                     }
                 } else {
@@ -128,6 +130,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void loadReceiverStatus(String hisUid) {
         DatabaseReference ref = userRef.child(hisUid);
@@ -148,16 +151,18 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage(String message) {
+        String messageId = chatRef.push().getKey(); // Generate a unique key for the message
         String timestamp = String.valueOf(System.currentTimeMillis());
 
         HashMap<String, Object> chatMessage = new HashMap<>();
+        chatMessage.put("messageId", messageId);
         chatMessage.put("sender", myUid);
         chatMessage.put("receiver", hisUid);
         chatMessage.put("message", message);
         chatMessage.put("timestamp", timestamp);
         chatMessage.put("isSeen", false);
 
-        chatRef.push().setValue(chatMessage)
+        chatRef.child(messageId).setValue(chatMessage)
                 .addOnSuccessListener(aVoid -> messageEt.setText("")) // Clear input field
                 .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
