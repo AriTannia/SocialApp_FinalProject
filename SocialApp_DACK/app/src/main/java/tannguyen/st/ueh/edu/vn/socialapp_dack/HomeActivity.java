@@ -114,38 +114,42 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
         if (id == R.id.action_personal) {
             Toast.makeText(this, "Thông tin cá nhân được chọn", Toast.LENGTH_SHORT).show();
 
-            // Tạo đối tượng Fragment UserFragment
+            // Thay thế Fragment hiện tại bằng ProfileFragment
             ProfileFragment profileFragment = new ProfileFragment();
-
-            // Thực hiện thay thế Fragment hiện tại bằng UserFragment
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, profileFragment) // R.id.fragment_container là nơi chứa Fragment trong Activity
-                    .addToBackStack(null) // Thêm vào back stack để quay lại Fragment trước đó
+                    .replace(R.id.fragment_container, profileFragment)
+                    .addToBackStack(null)
                     .commit();
-
-
             return true;
+
         } else if (id == R.id.action_other_users) {
             Toast.makeText(this, "Người dùng khác được chọn", Toast.LENGTH_SHORT).show();
 
             UsersFragment usersFragment = new UsersFragment();
-
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, usersFragment)
                     .addToBackStack(null)
                     .commit();
-
             return true;
+
         } else if (id == R.id.action_logout) {
-            // Thực hiện signOut khi người dùng chọn Logout
+            // Xử lý đăng xuất
             signOut();
             return true;
+
+        } else if (id == R.id.nav_chat) { // Mục menu "Chat"
+            Intent intent = new Intent(HomeActivity.this, ChatActivity.class); // Chuyển sang ChatActivity
+            startActivity(intent);
+            return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
+
 
     private void signOut() {
         mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
@@ -161,4 +165,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
     }
+
+
 }

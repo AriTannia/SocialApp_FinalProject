@@ -65,10 +65,7 @@ public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.MyHolder>{
                 // Khởi tạo Intent để mở ChatActivity
                 Intent intent = new Intent(context, ChatActivity.class);
 
-// Truyền dữ liệu (hisUID) qua Intent
                 intent.putExtra("hisUid", hisUID);
-
-// Bắt đầu Activity
                 context.startActivity(intent);
 
             }
