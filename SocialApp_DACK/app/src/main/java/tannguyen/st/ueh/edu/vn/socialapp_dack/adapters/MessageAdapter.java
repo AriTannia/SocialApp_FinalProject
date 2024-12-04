@@ -40,24 +40,34 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         MessageModel message = messageList.get(position);
+
         holder.messageTv.setText(message.getMessage());
 
-        // Kiểm tra người gửi
+        // Align messages and show "Seen/Delivered" based on sender or receiver
         if (message.getSender().equals(myUid)) {
-            // Tin nhắn gửi: căn phải
+            // Message sent by current user
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_sender);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
             params.gravity = Gravity.END;
             holder.messageTv.setLayoutParams(params);
+
+            // Display "Seen" or "Delivered"
+            if (message.isSeen()) {
+                holder.statusTv.setText("Seen");
+            } else {
+                holder.statusTv.setText("Delivered");
+            }
         } else {
-            // Tin nhắn nhận: căn trái
+            // Message received by current user
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_receiver);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
             params.gravity = Gravity.START;
             holder.messageTv.setLayoutParams(params);
+
+            // Hide status for received messages
+            holder.statusTv.setVisibility(View.GONE);
         }
     }
-
 
     @Override
     public int getItemCount() {
@@ -65,11 +75,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        TextView messageTv;
+        TextView messageTv, statusTv;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             messageTv = itemView.findViewById(R.id.messageTv);
+            statusTv = itemView.findViewById(R.id.statusTv); // Added for "Seen/Delivered" status
         }
     }
 }

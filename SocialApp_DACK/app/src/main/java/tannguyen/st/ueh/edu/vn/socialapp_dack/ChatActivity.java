@@ -31,7 +31,7 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 
 public class ChatActivity extends AppCompatActivity {
 
-    // Views from XML
+    // Views
     Toolbar toolbar;
     CircularImageView profileIv;
     TextView nameTv, userStatusTv;
@@ -39,7 +39,7 @@ public class ChatActivity extends AppCompatActivity {
     ImageButton sendBtn;
     RecyclerView chatRecyclerView;
 
-    // Firebase references
+    // Firebase
     FirebaseAuth mAuth;
     DatabaseReference userRef, chatRef;
 
@@ -67,7 +67,7 @@ public class ChatActivity extends AppCompatActivity {
         chatRecyclerView.setHasFixedSize(true);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Initialize Firebase
+        // Firebase initialization
         mAuth = FirebaseAuth.getInstance();
         myUid = mAuth.getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
@@ -86,6 +86,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // Load receiver's information
         loadReceiverInfo(hisUid);
+        loadReceiverStatus(hisUid);
 
         // Set send button click listener
         sendBtn.setOnClickListener(v -> {
@@ -99,6 +100,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // Load chat messages
         loadMessages();
+        markMessagesAsSeen(hisUid);
     }
 
     private void loadReceiverInfo(String hisUid) {
@@ -108,10 +110,8 @@ public class ChatActivity extends AppCompatActivity {
                 if (snapshot.exists()) {
                     String name = snapshot.child("name").getValue(String.class);
                     String image = snapshot.child("image").getValue(String.class);
-                    String status = snapshot.child("status").getValue(String.class); // Optional: online/offline
 
                     nameTv.setText(name);
-                    userStatusTv.setText(status != null ? status : "offline");
                     if (image != null) {
                         Picasso.get().load(image).placeholder(R.drawable.ic_default).into(profileIv);
                     } else {
@@ -129,6 +129,24 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    private void loadReceiverStatus(String hisUid) {
+        DatabaseReference ref = userRef.child(hisUid);
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String status = snapshot.child("status").getValue(String.class);
+                    userStatusTv.setText(status != null && status.equals("online") ? "online" : "offline");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ChatActivity.this, "Không thể tải trạng thái người dùng", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void sendMessage(String message) {
         String timestamp = String.valueOf(System.currentTimeMillis());
 
@@ -137,9 +155,10 @@ public class ChatActivity extends AppCompatActivity {
         chatMessage.put("receiver", hisUid);
         chatMessage.put("message", message);
         chatMessage.put("timestamp", timestamp);
+        chatMessage.put("isSeen", false);
 
         chatRef.push().setValue(chatMessage)
-                .addOnSuccessListener(aVoid -> messageEt.setText("")) // Clear the input field after sending
+                .addOnSuccessListener(aVoid -> messageEt.setText("")) // Clear input field
                 .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
@@ -163,6 +182,27 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ChatActivity.this, "Không thể tải tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void markMessagesAsSeen(String hisUid) {
+        chatRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    MessageModel message = ds.getValue(MessageModel.class);
+                    if (message.getReceiver().equals(myUid) && message.getSender().equals(hisUid)) {
+                        HashMap<String, Object> seenMap = new HashMap<>();
+                        seenMap.put("isSeen", true);
+                        ds.getRef().updateChildren(seenMap);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ChatActivity.this, "Không thể cập nhật trạng thái 'Đã xem'", Toast.LENGTH_SHORT).show();
             }
         });
     }
