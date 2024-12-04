@@ -1,6 +1,6 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.models;
 
-public class User {
+public class ModelUser {
     private String name;
     private String email;
     private String password;  // Thêm thuộc tính password
@@ -10,11 +10,11 @@ public class User {
     private String uid;       // Thêm thuộc tính uid
 
     // Constructor mặc định (Firebase yêu cầu phải có constructor mặc định)
-    public User() {
+    public ModelUser() {
     }
 
     // Constructor có tham số để tạo đối tượng User
-    public User(String name, String email, String password, String phone, String image, String uid, String coverIv) {
+    public ModelUser(String name, String email, String password, String phone, String image, String uid, String coverIv) {
         this.name = name;
         this.email = email;
         this.password = password;

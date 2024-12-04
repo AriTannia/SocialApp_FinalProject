@@ -37,6 +37,8 @@ import androidx.appcompat.app.AlertDialog;
 
 import java.util.HashMap;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+
 public class ProfileFragment extends Fragment {
 
     private TextView tvName, tvEmail, tvPhone;
@@ -277,7 +279,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    User currentUser = dataSnapshot.getValue(User.class);
+                    ModelUser currentUser = dataSnapshot.getValue(ModelUser.class);
                     if (currentUser != null) {
                         // Cập nhật ảnh vào Firebase chỉ thay đổi thông tin ảnh mà không làm mất dữ liệu cũ
                         userRef.updateChildren(updates)

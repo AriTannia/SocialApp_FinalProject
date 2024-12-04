@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -15,12 +15,15 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
+
 public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.MyHolder>{
 
     Context context;
-    List<User> userList;
+    List<ModelUser> userList;
 
-    public AdapterUsers(Context context, List<User> userList) {
+    public AdapterUsers(Context context, List<ModelUser> userList) {
         this.context = context;
         this.userList = userList;
     }

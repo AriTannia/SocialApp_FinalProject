@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +42,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
@@ -194,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         String uid = user.getUid();  // UID của người dùng
 
         // Tạo đối tượng User
-        User newUser = new User(name, email, password, "", "", uid, "");
+        ModelUser newUser = new ModelUser(name, email, password, "", "", uid, "");
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         userRef.setValue(newUser)

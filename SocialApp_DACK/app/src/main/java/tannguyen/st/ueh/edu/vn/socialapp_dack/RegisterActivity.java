@@ -4,31 +4,23 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
-import org.intellij.lang.annotations.Pattern;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -119,7 +111,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void saveUserToDatabase(FirebaseUser user, String name, String email, String password) {
         // Lấy User id từ Firebase User
         String uid = user.getUid();
-        User newUser = new User(name, email, password, "", "", uid, ""); // Add uid here
+        ModelUser newUser = new ModelUser(name, email, password, "", "", uid, ""); // Add uid here
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
 

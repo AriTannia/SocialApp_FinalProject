@@ -19,18 +19,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.ktx.Firebase;
-
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterUsers;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class UsersFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private AdapterUsers adapterUsers;
-    private List<User> userList;
+    private List<ModelUser> userList;
 
     public UsersFragment() {
         // Required empty public constructor
@@ -62,7 +62,7 @@ public class UsersFragment extends Fragment {
                 userList.clear(); // Xóa danh sách cũ trước khi tải lại
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    User user = ds.getValue(User.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
+                    ModelUser user = ds.getValue(ModelUser.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
 
                     if (user != null && fUser != null) {
                         // Kiểm tra xem người dùng hiện tại có khớp với user trong danh sách không
@@ -93,7 +93,7 @@ public class UsersFragment extends Fragment {
                 userList.clear(); // Xóa danh sách cũ
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    User user = ds.getValue(User.class);
+                    ModelUser user = ds.getValue(ModelUser.class);
                     if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
                         if (user.getName().toLowerCase().contains(query.toLowerCase()) ||
                                 user.getEmail().toLowerCase().contains(query.toLowerCase())) {
