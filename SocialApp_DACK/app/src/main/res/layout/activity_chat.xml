@@ -90,7 +90,7 @@
             android:layout_height="48dp"
             android:background="@null"
             android:src="@drawable/ic_send"
-            android:contentDescription="Hi" />
+            android:contentDescription="Send message" />
 
     </LinearLayout>
 

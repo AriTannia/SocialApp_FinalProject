@@ -22,7 +22,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.MessageAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -113,21 +118,50 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage(String message) {
         String timestamp = String.valueOf(System.currentTimeMillis());
 
-        // Create a message HashMap
+        // Tạo HashMap chứa nội dung tin nhắn
         HashMap<String, Object> chatMessage = new HashMap<>();
         chatMessage.put("sender", myUid);
         chatMessage.put("receiver", hisUid);
         chatMessage.put("message", message);
         chatMessage.put("timestamp", timestamp);
 
-        // Push the message to Firebase Database
+        // Ghi dữ liệu vào Firebase
         chatRef.push().setValue(chatMessage)
                 .addOnSuccessListener(aVoid -> {
-                    // Clear input field after sending
+                    // Xóa nội dung input sau khi gửi
                     messageEt.setText("");
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void loadMessages() {
+        chatRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<MessageModel> messageList = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    MessageModel message = ds.getValue(MessageModel.class);
+
+                    // Hiển thị tin nhắn giữa myUid và hisUid
+                    if ((message.getSender().equals(myUid) && message.getReceiver().equals(hisUid)) ||
+                            (message.getSender().equals(hisUid) && message.getReceiver().equals(myUid))) {
+                        messageList.add(message);
+                    }
+                }
+                // Cập nhật adapter của RecyclerView
+                MessageAdapter adapter = new MessageAdapter(ChatActivity.this, messageList);
+                chatRecyclerView.setAdapter(adapter);
+                chatRecyclerView.scrollToPosition(messageList.size() - 1); // Tự động cuộn xuống
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ChatActivity.this, "Không thể tải tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
 }
