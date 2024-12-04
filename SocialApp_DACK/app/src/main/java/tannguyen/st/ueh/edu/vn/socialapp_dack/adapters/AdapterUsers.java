@@ -1,6 +1,7 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.ChatActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 
@@ -40,6 +42,7 @@ public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.MyHolder>{
     @Override
     public void onBindViewHolder(@NonNull MyHolder holder, int position) {
         // Lấy dữ liệu
+        String hisUID = userList.get(position).getUid();
         String userImage = userList.get(position).getImage();
         String name = userList.get(position).getName();
         String email = userList.get(position).getEmail();
@@ -59,7 +62,15 @@ public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.MyHolder>{
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, "" + email, Toast.LENGTH_SHORT).show();
+                // Khởi tạo Intent để mở ChatActivity
+                Intent intent = new Intent(context, ChatActivity.class);
+
+// Truyền dữ liệu (hisUID) qua Intent
+                intent.putExtra("hisUid", hisUID);
+
+// Bắt đầu Activity
+                context.startActivity(intent);
+
             }
         });
     }
