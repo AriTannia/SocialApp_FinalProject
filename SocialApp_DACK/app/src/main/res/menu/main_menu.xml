@@ -11,6 +11,11 @@
         android:id="@+id/action_logout"
         android:title="Đăng Xuất" />
     <item
+        android:id="@+id/nav_chat"
+        android:title="Chat"
+        android:icon="@drawable/ic_chat_black"
+        />
+    <item
         android:id="@+id/action_search"
         android:title="Tìm Kiếm"
         android:icon="@drawable/ic_search"
