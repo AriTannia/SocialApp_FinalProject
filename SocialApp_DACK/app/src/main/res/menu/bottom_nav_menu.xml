@@ -12,6 +12,11 @@
         android:icon="@drawable/ic_add_post"
         android:title="Thêm bài viết"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_other_users"
+        android:icon="@drawable/ic_users"
+        android:title="Bạn Bè"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_personal"

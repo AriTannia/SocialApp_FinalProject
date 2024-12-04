@@ -77,6 +77,8 @@ public class HomeActivity extends AppCompatActivity {
 
             } else if (itemId == R.id.action_add) {
 
+            }  else if (itemId == R.id.action_other_users) {
+                selectedFragment = new UsersFragment();
             } else if (itemId == R.id.action_personal) {
                 selectedFragment = new ProfileFragment();
             }
