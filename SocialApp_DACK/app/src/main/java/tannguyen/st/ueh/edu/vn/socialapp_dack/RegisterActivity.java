@@ -22,6 +22,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private TextView tvLogin;
@@ -111,6 +113,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void saveUserToDatabase(FirebaseUser user, String name, String email, String password) {
         // Lấy User id từ Firebase User
         String uid = user.getUid();
+        ModelUser newUser = new ModelUser(name, email, password, "", "", uid, ""); // Add uid here
         ModelUser newUser = new ModelUser(name, email, password, "", "", uid, ""); // Add uid here
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());

@@ -45,6 +45,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+
 public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
     private GoogleSignInClient mGoogleSignInClient;
@@ -195,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
         String uid = user.getUid();  // UID của người dùng
 
         // Tạo đối tượng User
+        ModelUser newUser = new ModelUser(name, email, password, "", "", uid, "");
         ModelUser newUser = new ModelUser(name, email, password, "", "", uid, "");
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);

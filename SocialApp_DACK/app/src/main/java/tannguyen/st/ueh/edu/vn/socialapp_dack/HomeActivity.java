@@ -157,6 +157,56 @@ public class HomeActivity extends AppCompatActivity {
         return true;
     }
 
+    private void openUsersFragment(String query) {
+        // Tạo hoặc lấy fragment hiện tại
+        UsersFragment fragment = (UsersFragment) getSupportFragmentManager().findFragmentByTag("USERS_FRAGMENT");
+        if (fragment == null) {
+            fragment = new UsersFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment, "USERS_FRAGMENT")
+                    .addToBackStack(null)
+                    .commit();
+        }
+        fragment.searchUsers(query); // Gọi phương thức tìm kiếm trong fragment
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_personal) {
+            Toast.makeText(this, "Thông tin cá nhân được chọn", Toast.LENGTH_SHORT).show();
+
+            // Thay thế Fragment hiện tại bằng ProfileFragment
+            ProfileFragment profileFragment = new ProfileFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, profileFragment)
+                    .addToBackStack(null)
+                    .commit();
+            return true;
+
+        } else if (id == R.id.action_other_users) {
+            Toast.makeText(this, "Người dùng khác được chọn", Toast.LENGTH_SHORT).show();
+
+            UsersFragment usersFragment = new UsersFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, usersFragment)
+                    .addToBackStack(null)
+                    .commit();
+            return true;
+
+        } else if (id == R.id.action_logout) {
+            // Xử lý đăng xuất
+            signOut();
+            return true;
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
     private void signOut() {
         mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
@@ -171,4 +221,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
     }
+
+
 }

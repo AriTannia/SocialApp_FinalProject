@@ -23,7 +23,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.Model.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterUsers;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class UsersFragment extends Fragment {
 
@@ -62,6 +63,7 @@ public class UsersFragment extends Fragment {
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ModelUser user = ds.getValue(ModelUser.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
+                    ModelUser user = ds.getValue(ModelUser.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
 
                     if (user != null && fUser != null) {
                         // Kiểm tra xem người dùng hiện tại có khớp với user trong danh sách không
@@ -92,6 +94,7 @@ public class UsersFragment extends Fragment {
                 userList.clear(); // Xóa danh sách cũ
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
+                    ModelUser user = ds.getValue(ModelUser.class);
                     ModelUser user = ds.getValue(ModelUser.class);
                     if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
                         if (user.getName().toLowerCase().contains(query.toLowerCase()) ||
