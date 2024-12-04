@@ -15,22 +15,22 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <!-- Receiver profile picture inside the Toolbar -->
+        <!-- Receiver profile picture -->
         <com.mikhaellopez.circularimageview.CircularImageView
             android:id="@+id/profileIv"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default"
-            app:c_background_color="@color/colorPrimaryDark" />
+            />
 
+        <!-- Receiver name and status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginStart="20dp"
-            android:layout_marginLeft="20dp">
+            android:layout_marginStart="20dp">
 
             <!-- Receiver name -->
             <TextView
@@ -42,7 +42,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Receiver status i.e. online or offline -->
+            <!-- Receiver status -->
             <TextView
                 android:id="@+id/userStatusTv"
                 android:layout_width="match_parent"
@@ -52,11 +52,9 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-
-
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Send message layout -->
+    <!-- Message Input Layout -->
     <LinearLayout
         android:id="@+id/chatLayout"
         android:layout_width="match_parent"
@@ -77,13 +75,15 @@
             android:padding="15dp"
             android:inputType="textCapSentences" />
 
-        <!-- Button: Send message -->
+        <!-- Send Button -->
         <ImageButton
             android:id="@+id/sendBtn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@null"
-            android:src="@drawable/ic_send" />
+            android:src="@drawable/ic_send"
+            android:contentDescription="Hi" />
+
     </LinearLayout>
 
 </RelativeLayout>
