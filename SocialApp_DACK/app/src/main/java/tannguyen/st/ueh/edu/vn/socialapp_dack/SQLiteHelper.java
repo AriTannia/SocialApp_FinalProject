@@ -1,10 +1,14 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack;
 
+import static android.app.DownloadManager.COLUMN_TITLE;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
@@ -17,6 +21,10 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PHONE = "phone";
     public static final String COLUMN_IMAGE = "image";
     public static final String COLUMN_COVER = "cover";
+    private static final String TABLE_POSTS = "posts";
+    private static final String COLUMN_TITLE = "title";
+    private static final String COLUMN_CONTENT = "content";
+    private static final String COLUMN_TIMESTAMP = "timestamp";
 
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -57,6 +65,16 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public Cursor getUserByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TABLE_USERS, null, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
+    }
+    public void addPost(Post post) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, post.getId());
+        values.put(COLUMN_TITLE, post.getTitle());
+        values.put(COLUMN_CONTENT, post.getContent());
+        values.put(COLUMN_TIMESTAMP, post.getTimestamp());
+        db.insert(TABLE_POSTS, null, values);
+        db.close();
     }
 }
 
