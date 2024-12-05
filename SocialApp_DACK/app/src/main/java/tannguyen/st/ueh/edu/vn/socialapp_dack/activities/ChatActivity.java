@@ -2,12 +2,15 @@ package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -103,6 +106,55 @@ public class ChatActivity extends AppCompatActivity {
         loadMessages();
         markMessagesAsSeen(hisUid);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.chat_menu, menu); // Gắn menu đã tạo
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.clear_all) {
+            confirmDeleteAllMessages(); // Gọi hàm xác nhận xóa tất cả
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void confirmDeleteAllMessages() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Xóa tất cả tin nhắn");
+        builder.setMessage("Bạn có chắc muốn xóa tất cả tin nhắn không?");
+        builder.setPositiveButton("Xóa", (dialog, which) -> deleteAllMessages());
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+    private void deleteAllMessages() {
+        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    MessageModel message = ds.getValue(MessageModel.class);
+                    // Kiểm tra nếu tin nhắn giữa myUid và hisUid
+                    if ((message.getSender().equals(myUid) && message.getReceiver().equals(hisUid)) ||
+                            (message.getSender().equals(hisUid) && message.getReceiver().equals(myUid))) {
+                        ds.getRef().removeValue(); // Xóa tin nhắn
+                    }
+                }
+                Toast.makeText(ChatActivity.this, "Đã xóa tất cả tin nhắn", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ChatActivity.this, "Lỗi khi xóa tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+
 
     private void loadReceiverInfo(String hisUid) {
         userRef.child(hisUid).addListenerForSingleValueEvent(new ValueEventListener() {
