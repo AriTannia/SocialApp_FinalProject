@@ -55,6 +55,11 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.mikhaellopez:circularimageview:4.3.0")
     implementation ("com.google.firebase:firebase-storage:20.2.1")
+    // Thư viện Material Components (Nếu bạn muốn sử dụng các thành phần Material UI)
+    implementation ("com.google.android.material:material:1.9.0")
+    // Thư viện CardView
+    implementation ("androidx.cardview:cardview:1.0.0")
+
 
 
 

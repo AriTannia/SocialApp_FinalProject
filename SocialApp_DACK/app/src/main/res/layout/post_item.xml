@@ -1,38 +1,69 @@
-<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:elevation="4dp"
+    android:radius="8dp">
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:padding="16dp">
 
-    <!-- Tiêu đề bài đăng -->
+    <TextView
+        android:id="@+id/postPosterName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorAccent"
+        android:text="Posted by: Username" />
     <TextView
         android:id="@+id/postTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tiêu đề bài đăng"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:paddingBottom="4dp" />
+        android:text="Title" />
 
-    <!-- Nội dung bài đăng -->
     <TextView
         android:id="@+id/postContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nội dung bài đăng"
-        android:textSize="14sp"
-        android:maxLines="3"
-        android:ellipsize="end" />
+        android:text="Content" />
 
-    <!-- Thời gian bài đăng -->
     <TextView
         android:id="@+id/postTimestamp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thời gian đăng"
-        android:textSize="12sp"
-        android:textColor="#888888"
-        android:paddingTop="4dp" />
+        android:text="Timestamp" />
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/buttonLike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_like"
+            android:contentDescription="Like Button" />
+
+        <ImageButton
+            android:id="@+id/buttonComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_comment"
+            android:contentDescription="Comment Button"
+            android:layout_marginStart="16dp" />
+
+        <ImageButton
+            android:id="@+id/buttonSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_savee_black"
+            android:contentDescription="Save Button"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
 </LinearLayout>
+</androidx.cardview.widget.CardView>

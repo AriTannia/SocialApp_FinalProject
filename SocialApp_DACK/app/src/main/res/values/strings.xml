@@ -5,4 +5,11 @@
     <string name="cover_image">Cover Image</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="inbox_description">Mô tả hộp thư đến</string>
+    <string name="logo_description">Logo App</string>
+    <string name="save_button">Lưu bài viết</string>
+    <string name="comment_button">Bình luận bài viết</string>
+    <string name="like_button">Thích bài viết</string>
+
+
 </resources>
