@@ -1,4 +1,6 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.fragments;
+
+import static tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.ImageAdapter.saveImageToInternalStorage;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
@@ -7,6 +9,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,9 +40,10 @@ import androidx.appcompat.app.AlertDialog;
 
 import java.util.HashMap;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
-
-import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.utils.ImageDownloader;
 
 public class ProfileFragment extends Fragment {
 
@@ -95,12 +99,14 @@ public class ProfileFragment extends Fragment {
                     // Kiểm tra và tải ảnh
                     if (!TextUtils.isEmpty(image)) {
                         Picasso.get().load(image).into(imgvAvatar);
+                        saveImageToInternalStorage(getContext(), "image", image); // Lưu ảnh by Tan
                     } else {
                         Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
                     }
 
                     if (!TextUtils.isEmpty(coverImg)) {
                         Picasso.get().load(coverImg).into(Coverimgv);
+                        saveImageToInternalStorage(getContext(), "cover", coverImg); // Lưu ảnh by Tan
                     } else {
                         Picasso.get().load(R.drawable.error_image).into(Coverimgv);
                     }
@@ -275,7 +281,7 @@ public class ProfileFragment extends Fragment {
         // Lấy User id từ Firebase User
         String uid = user.getUid();
 
-        // Lấy thông tin người dùng hiện tại từ Firebase để không bị ghi đè
+        // Lấy thông tin người dùng hiện tại từ Firebase
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -283,19 +289,12 @@ public class ProfileFragment extends Fragment {
                 if (dataSnapshot.exists()) {
                     ModelUser currentUser = dataSnapshot.getValue(ModelUser.class);
                     if (currentUser != null) {
-                        // Cập nhật ảnh vào Firebase chỉ thay đổi thông tin ảnh mà không làm mất dữ liệu cũ
+                        // Cập nhật ảnh vào Firebase
                         userRef.updateChildren(updates)
                                 .addOnSuccessListener(unused -> {
-                                    // Cập nhật SQLite
-                                    SQLiteHelper dbHelper = new SQLiteHelper(getContext());
-                                    if ("image".equals(profileOrCoverPhoto)) {
-                                        dbHelper.insertOrUpdateUser(currentUser.getName(), currentUser.getEmail(), currentUser.getPassword(), imageUrl, null);
-                                    } else if ("cover".equals(profileOrCoverPhoto)) {
-                                        dbHelper.insertOrUpdateUser(currentUser.getName(), currentUser.getEmail(), currentUser.getPassword(), null, imageUrl);
-                                    }
-
                                     pd.dismiss();
-                                    Toast.makeText(getActivity(), "Đã cập nhật ảnh thành công!", Toast.LENGTH_SHORT).show();
+                                    // Gọi hàm để lưu ảnh
+                                    saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl); // Lưu ảnh by Tan
                                 })
                                 .addOnFailureListener(e -> {
                                     pd.dismiss();
@@ -312,4 +311,5 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
+
 }

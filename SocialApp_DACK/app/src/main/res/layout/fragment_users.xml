@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".UsersFragment">
+    tools:context=".fragments.UsersFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/users_recyclerView"
