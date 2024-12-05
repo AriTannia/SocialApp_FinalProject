@@ -43,6 +43,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
@@ -232,6 +234,34 @@ public class MainActivity extends AppCompatActivity {
         progressDialog.setMessage("Đang đăng nhập...");
         progressDialog.show();
 
+        // Kiểm tra tài khoản admin
+        if (email.equals("admin@gmail.com") && password.equals("admin1")) {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser == null) {
+                // Nếu admin chưa được đăng nhập trên Firebase, tiến hành đăng nhập
+                mAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(task -> {
+                            progressDialog.dismiss();
+                            if (task.isSuccessful()) {
+                                saveAdminToFirebase(email); // Lưu thông tin admin vào Firebase
+                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Toast.makeText(MainActivity.this, "Lỗi khi đăng nhập admin: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+            } else {
+                // Nếu admin đã được đăng nhập
+                saveAdminToFirebase(email); // Lưu thông tin admin vào Firebase
+                progressDialog.dismiss();
+                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                startActivity(intent);
+                finish();
+            }
+            return; // Kết thúc hàm
+        }
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     progressDialog.dismiss();
@@ -256,6 +286,45 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
+
+    private void saveAdminToFirebase(String email) {
+        String adminUid = mAuth.getCurrentUser().getUid(); // Lấy UID từ tài khoản hiện tại
+
+        DatabaseReference adminRef = FirebaseDatabase.getInstance().getReference("Users").child(adminUid);
+        adminRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    // Nếu admin chưa tồn tại trên Firebase, lưu thông tin
+                    HashMap<String, Object> adminData = new HashMap<>();
+                    adminData.put("name", "Admin"); // Tên admin mặc định
+                    adminData.put("email", email);
+                    adminData.put("password", "admin1"); // Mật khẩu mặc định
+                    adminData.put("phone", ""); // Số điện thoại để trống
+                    adminData.put("image", ""); // Ảnh đại diện để trống
+                    adminData.put("uid", adminUid); // UID của admin
+
+                    adminRef.setValue(adminData)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(MainActivity.this, "Trạng thái admin đã được lưu!", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Lỗi khi lưu trạng thái admin: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    // Nếu thông tin admin đã tồn tại
+                    Toast.makeText(MainActivity.this, "Admin đã tồn tại trong hệ thống!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Lỗi khi kiểm tra dữ liệu admin: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     private void showRecoveryPasswordDialogue() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
