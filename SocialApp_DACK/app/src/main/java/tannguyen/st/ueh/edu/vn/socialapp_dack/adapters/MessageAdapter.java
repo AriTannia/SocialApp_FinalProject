@@ -48,18 +48,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         MessageModel message = messageList.get(position);
 
-        // Set the message text
+        // Set nội dung tin nhắn
         holder.messageTv.setText(message.getMessage());
 
-        // Determine if the message is sent by the current user
+        // Kiểm tra tin nhắn được gửi bởi ai (người gửi hiện tại hay người nhận)
         if (message.getSender().equals(myUid)) {
-            // Sent messages: Align to the right
+            // Tin nhắn được gửi: căn phải
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_sender);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
             params.gravity = Gravity.END;
             holder.messageTv.setLayoutParams(params);
 
-            // Show "Seen" or "Delivered" status for sent messages
+            // Hiển thị trạng thái "Seen" hoặc "Delivered"
             if (message.isSeen()) {
                 holder.statusTv.setText("Seen");
             } else {
@@ -67,28 +67,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
             holder.statusTv.setVisibility(View.VISIBLE);
         } else {
-            // Received messages: Align to the left
+            // Tin nhắn nhận: căn trái
             holder.messageTv.setBackgroundResource(R.drawable.bg_message_receiver);
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageTv.getLayoutParams();
             params.gravity = Gravity.START;
             holder.messageTv.setLayoutParams(params);
-
-            // Hide the status for received messages
-            holder.statusTv.setVisibility(View.GONE);
+            holder.statusTv.setVisibility(View.GONE); // Ẩn trạng thái với tin nhắn nhận
         }
 
-        // Add long click listener for edit/delete menu
+        // Thêm sự kiện long click vào itemView để hiển thị PopupMenu
         holder.itemView.setOnLongClickListener(v -> {
-            if (message.getSender().equals(myUid)) { // Only allow editing/deleting messages sent by the current user
+            if (message.getSender().equals(myUid)) {
+                // Chỉ hiển thị menu cho tin nhắn do người dùng hiện tại gửi
                 showPopupMenu(holder, message);
             }
             return true;
         });
     }
 
+
     private void showPopupMenu(MessageViewHolder holder, MessageModel message) {
         PopupMenu popupMenu = new PopupMenu(context, holder.itemView);
-        popupMenu.inflate(R.menu.message_options); // Menu with "Edit" and "Delete"
+        popupMenu.inflate(R.menu.message_options); // Gắn file menu `message_options.xml`
         popupMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.edit_message) {
@@ -101,9 +101,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 return false;
             }
         });
-
         popupMenu.show();
     }
+
 
     private void showEditDialog(MessageModel message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
