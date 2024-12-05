@@ -22,7 +22,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SocialApp_DACK"
         tools:targetApi="31">
-
+        <activity
+            android:name=".CommentActivity"
+            android:exported="false" />
         <activity
             android:name=".PostActivity"
             android:exported="false" />

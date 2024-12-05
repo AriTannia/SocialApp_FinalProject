@@ -1,6 +1,7 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.CommentActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
@@ -57,6 +59,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.commentButton.setOnClickListener(v -> {
                 // Handle "Comment" action
                 Toast.makeText(context, "Commenting on: " + post.getTitle(), Toast.LENGTH_SHORT).show();
+                // Chuyển đến Activity bình luận, truyền ID của bài viết
+                Intent intent = new Intent(context, CommentActivity.class);
+                intent.putExtra("POST_ID", post.getId());  // Truyền ID của bài viết
+                context.startActivity(intent);  // Mở CommentActivity
             });
 
             holder.saveButton.setOnClickListener(v -> {

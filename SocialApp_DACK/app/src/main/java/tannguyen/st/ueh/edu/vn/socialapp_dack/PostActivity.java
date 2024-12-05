@@ -23,7 +23,7 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 public class PostActivity extends AppCompatActivity {
 
     private EditText titleEditText, contentEditText;
-    private TextView userTextView; // TextView để hiển thị tên người đăng
+    private TextView userTextView;
     private SQLiteHelper databaseHelper;
     private DatabaseReference firebaseDatabase;
 
@@ -50,18 +50,20 @@ public class PostActivity extends AppCompatActivity {
             }
             // Hiển thị tên người dùng trong TextView
             userTextView.setText("Posted by: " + posterName);
+        } else {
+            // Nếu người dùng chưa đăng nhập, hiển thị thông báo
+            Toast.makeText(this, "You need to be logged in to post.", Toast.LENGTH_SHORT).show();
+            finish(); // Đóng activity nếu chưa đăng nhập
+            return;
         }
 
         // Xử lý khi người dùng nhấn nút đăng bài
-        findViewById(R.id.buttonPost).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createPost();
-            }
-        });
+        findViewById(R.id.buttonPost).setOnClickListener(v -> createPost());
+
     }
 
     private void createPost() {
+        // Lấy dữ liệu tiêu đề và nội dung bài viết
         String title = titleEditText.getText().toString();
         String content = contentEditText.getText().toString();
 
@@ -78,10 +80,11 @@ public class PostActivity extends AppCompatActivity {
                 posterName = currentUser.getEmail();  // Dự phòng bằng email nếu không có tên hiển thị
             }
 
+            // Tạo ID bài viết và timestamp
             String id = UUID.randomUUID().toString();
             long timestamp = System.currentTimeMillis();
 
-            // Tạo đối tượng Post với posterName
+            // Tạo đối tượng Post
             Post post = new Post(id, title, content, timestamp, posterName);
 
             // Lưu bài viết vào SQLite

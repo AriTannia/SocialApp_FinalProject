@@ -1,0 +1,46 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Danh sách các bình luận -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewComments"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:padding="8dp" />
+
+    <!-- Phần nhập bình luận mới -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <!-- Ô nhập nội dung bình luận -->
+        <EditText
+            android:id="@+id/editTextComment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Write a comment..."
+            android:background="@drawable/edit_text_background"
+            android:padding="12dp"
+            android:textSize="14sp" />
+
+        <!-- Nút gửi bình luận -->
+        <Button
+            android:id="@+id/buttonSendComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Send"
+            android:textColor="#FFFFFF"
+            android:background="@color/colorPrimaryDark"
+            android:padding="12dp" />
+    </LinearLayout>
+
+</LinearLayout>
