@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,6 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.PostAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 

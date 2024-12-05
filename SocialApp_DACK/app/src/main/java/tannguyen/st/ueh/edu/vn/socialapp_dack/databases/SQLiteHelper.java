@@ -7,10 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
+
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 2; // Tăng version để kích hoạt `onUpgrade`
 
+    // Bảng Users
     public static final String TABLE_USERS = "Users";
     public static final String COLUMN_UID = "uid";
     public static final String COLUMN_NAME = "name";
@@ -18,6 +21,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PHONE = "phone";
     public static final String COLUMN_IMAGE = "image";
     public static final String COLUMN_COVER = "cover";
+
+    // Bảng Posts
+    private static final String TABLE_POSTS = "posts";
+    private static final String COLUMN_POST_ID = "post_id"; // Cột mới
+    private static final String COLUMN_TITLE = "title";
+    private static final String COLUMN_CONTENT = "content";
+    private static final String COLUMN_TIMESTAMP = "timestamp";
 
     private SQLiteDatabase writableDb; // Cơ sở dữ liệu ghi
 
@@ -125,5 +135,16 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             writableDb.close();
         }
         super.close();
+    }
+
+    public void addPost(Post post) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_UID, post.getId());
+        values.put(COLUMN_TITLE, post.getTitle());
+        values.put(COLUMN_CONTENT, post.getContent());
+        values.put(COLUMN_TIMESTAMP, post.getTimestamp());
+        db.insert(TABLE_POSTS, null, values);
+        db.close();
     }
 }

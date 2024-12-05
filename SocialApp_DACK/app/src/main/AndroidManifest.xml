@@ -25,13 +25,13 @@
 
         <!-- Thêm cả activity từ HEAD và origin/dev -->
         <activity
-            android:name=".PostActivity"
+            android:name=".activities.PostActivity"
             android:exported="false" />
         <activity
-            android:name=".AdminProfileActivity"
+            android:name=".activities.AdminProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".AdminActivity"
+            android:name=".activities.AdminActivity"
             android:exported="false" />
         <activity
             android:name=".activities.ChatActivity"

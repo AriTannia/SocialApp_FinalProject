@@ -38,4 +38,3 @@ public class Post {
         this.posterName = posterName;
     }
 }
-
