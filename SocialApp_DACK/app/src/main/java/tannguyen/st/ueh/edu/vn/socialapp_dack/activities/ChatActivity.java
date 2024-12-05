@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.MessageAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 

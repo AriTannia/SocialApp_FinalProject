@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,7 +15,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.ChatActivity;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.ChatActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 
