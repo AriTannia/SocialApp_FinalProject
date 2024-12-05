@@ -88,5 +88,33 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TABLE_USERS, null, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
     }
+
+    public void updateUserInfo(String uid, String key, String value) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        // Tùy thuộc vào key, bạn cập nhật giá trị tương ứng trong SQLite
+        switch (key) {
+            case "name":
+                values.put(COLUMN_NAME, value);
+                break;
+            case "phone":
+                values.put(COLUMN_PHONE, value);
+                break;
+            case "email":
+                values.put(COLUMN_EMAIL, value);
+                break;
+            case "image":
+                values.put(COLUMN_IMAGE, value);
+                break;
+            case "cover":
+                values.put(COLUMN_COVER, value);
+                break;
+        }
+
+        // Cập nhật thông tin vào SQLite
+        db.update(TABLE_USERS, values, COLUMN_UID + "=?", new String[]{uid});
+        db.close();
+    }
 }
 

@@ -229,27 +229,31 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String value = editText.getText().toString().trim();
-                if(!TextUtils.isEmpty(value)) {
+                if (!TextUtils.isEmpty(value)) {
                     pd.show();
                     HashMap<String, Object> result = new HashMap<>();
                     result.put(key, value);
 
+                    // Cập nhật Firebase
                     databaseReference.child(user.getUid()).updateChildren(result)
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void unused) {
                                     pd.dismiss();
                                     Toast.makeText(getActivity(), "Đã cập nhật... " + key, Toast.LENGTH_SHORT).show();
+
+                                    // Cập nhật thông tin vào SQLite sau khi thành công
+                                    dbHelper.updateUserInfo(user.getUid(), key, value);  // Cập nhật SQLite
                                 }
-                            }).addOnFailureListener(new OnFailureListener() {
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
                                     pd.dismiss();
                                     Toast.makeText(getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
-                }
-                else {
+                } else {
                     Toast.makeText(getActivity(), "Hãy Nhập " + key, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -264,6 +268,7 @@ public class ProfileFragment extends Fragment {
 
         builder.create().show();
     }
+
 
     private void showImgPicDialogue() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -295,7 +300,7 @@ public class ProfileFragment extends Fragment {
 
         // Tạo dữ liệu để cập nhật vào Firebase Realtime Database
         HashMap<String, Object> updates = new HashMap<>();
-        updates.put(profileOrCoverPhoto, imageUrl);
+        updates.put(profileOrCoverPhoto, imageUrl); // Chọn "image" hoặc "cover" tùy thuộc vào ảnh đại diện hay ảnh bìa
 
         // Lấy User id từ Firebase User
         String uid = user.getUid();
@@ -306,20 +311,21 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    ModelUser currentUser = dataSnapshot.getValue(ModelUser.class);
-                    if (currentUser != null) {
-                        // Cập nhật ảnh vào Firebase
-                        userRef.updateChildren(updates)
-                                .addOnSuccessListener(unused -> {
-                                    pd.dismiss();
-                                    // Gọi hàm để lưu ảnh
-                                    saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl); // Lưu ảnh by Tan
-                                })
-                                .addOnFailureListener(e -> {
-                                    pd.dismiss();
-                                    Toast.makeText(getActivity(), "Lỗi cập nhật ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-                    }
+                    // Cập nhật ảnh vào Firebase
+                    userRef.updateChildren(updates)
+                            .addOnSuccessListener(unused -> {
+                                pd.dismiss();
+                                // Lưu ảnh vào bộ nhớ trong và cập nhật vào SQLite
+                                saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl);
+
+                                // Cập nhật vào SQLite sau khi cập nhật Firebase thành công
+                                dbHelper.updateUserInfo(uid, profileOrCoverPhoto, imageUrl);
+                                Toast.makeText(getActivity(), "Đã cập nhật ảnh thành công", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                pd.dismiss();
+                                Toast.makeText(getActivity(), "Lỗi cập nhật ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 }
             }
 
@@ -330,5 +336,4 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-
 }
