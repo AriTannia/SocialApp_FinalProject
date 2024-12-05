@@ -22,14 +22,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SocialApp_DACK"
         tools:targetApi="31">
-<<<<<<< HEAD
+
         <activity
             android:name=".CommentActivity"
             android:exported="false" />
-=======
 
-        <!-- Thêm cả activity từ HEAD và origin/dev -->
->>>>>>> c5efac4442b0fe911cbdb918bbc1655d210a9c0d
         <activity
             android:name=".PostActivity"
             android:exported="false" />
