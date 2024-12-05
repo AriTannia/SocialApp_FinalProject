@@ -5,13 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public static final String TABLE_USERS = "Users";
-    public static final String COLUMN_ID = "id";
+    public static final String COLUMN_UID = "uid";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_EMAIL = "email";
     public static final String COLUMN_PHONE = "phone";
@@ -25,12 +26,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createTable = "CREATE TABLE " + TABLE_USERS + "(" +
-                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "uid TEXT PRIMARY KEY, " +  // Sử dụng uid từ Firebase
                 COLUMN_NAME + " TEXT, " +
                 COLUMN_EMAIL + " TEXT UNIQUE, " +
                 COLUMN_PHONE + " TEXT, " +
                 COLUMN_IMAGE + " TEXT, " +
                 COLUMN_COVER + " TEXT" + ")";
+
         db.execSQL(createTable);
     }
 
@@ -40,18 +42,46 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long insertOrUpdateUser(String name, String email, String phone, String image, String cover) {
+    public boolean isUserExists(String uid) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(
+                TABLE_USERS,            // Table name
+                new String[]{COLUMN_UID}, // Select uid column
+                COLUMN_UID + "=?",     // WHERE clause
+                new String[]{uid},     // WHERE arguments
+                null, null, null       // Group by, having, order by
+        );
+        boolean exists = cursor != null && cursor.moveToFirst();
+        if (cursor != null) {
+            cursor.close();
+        }
+        return exists;
+    }
+
+    public void insertOrUpdateUser(String uid, String name, String email, String phone, String image, String cover) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put(COLUMN_UID, uid);
         values.put(COLUMN_NAME, name);
         values.put(COLUMN_EMAIL, email);
         values.put(COLUMN_PHONE, phone);
         values.put(COLUMN_IMAGE, image);
         values.put(COLUMN_COVER, cover);
 
-        long result = db.replace(TABLE_USERS, null, values);
+        if (isUserExists(uid)) {
+            int rowsAffected = db.update(TABLE_USERS, values, COLUMN_UID + "=?", new String[]{uid});
+            Log.d("SQLiteHelper", "Updated user with UID: " + uid + ", Rows affected: " + rowsAffected);
+            Log.d("SQLiteHelper", "User data: " +
+                    "Name: " + name +
+                    ", Email: " + email +
+                    ", Phone: " + phone +
+                    ", Image: " + image +
+                    ", Cover: " + cover);
+        } else {
+            long rowId = db.insert(TABLE_USERS, null, values);
+            Log.d("SQLiteHelper", "Inserted new user with UID: " + uid + ", Row ID: " + rowId);
+        }
         db.close();
-        return result;
     }
 
     public Cursor getUserByEmail(String email) {

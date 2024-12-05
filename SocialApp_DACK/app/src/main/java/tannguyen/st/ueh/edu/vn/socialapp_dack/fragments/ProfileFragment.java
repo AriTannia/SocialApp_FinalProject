@@ -62,8 +62,7 @@ public class ProfileFragment extends Fragment {
     String profileOrCoverPhoto;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         tvName = view.findViewById(R.id.profile_name);
@@ -85,40 +84,47 @@ public class ProfileFragment extends Fragment {
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot ds : snapshot.getChildren()) {
-                    String name = ""+ ds.child("name").getValue();
-                    String email = ""+ ds.child("email").getValue();
-                    String phone = ""+ ds.child("phone").getValue();
-                    String image = ""+ ds.child("image").getValue();
-                    String coverImg = ""+ ds.child("cover").getValue();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    String uid = "" + ds.child("uid").getValue();
+                    String name = "" + ds.child("name").getValue();
+                    String email = "" + ds.child("email").getValue();
+                    String phone = "" + ds.child("phone").getValue();
+                    String image = "" + ds.child("image").getValue();
+                    String coverImg = "" + ds.child("cover").getValue();
 
+                    // Hiển thị dữ liệu lên giao diện
                     tvName.setText(name);
                     tvEmail.setText(email);
                     tvPhone.setText(phone);
 
-                    // Kiểm tra và tải ảnh
+                    // Lưu ảnh vào bộ nhớ trong
                     if (!TextUtils.isEmpty(image)) {
                         Picasso.get().load(image).into(imgvAvatar);
-                        saveImageToInternalStorage(getContext(), "image", image); // Lưu ảnh by Tan
+                        saveImageToInternalStorage(getContext(), "image", image);
                     } else {
                         Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
                     }
 
                     if (!TextUtils.isEmpty(coverImg)) {
                         Picasso.get().load(coverImg).into(Coverimgv);
-                        saveImageToInternalStorage(getContext(), "cover", coverImg); // Lưu ảnh by Tan
+                        saveImageToInternalStorage(getContext(), "cover", coverImg);
                     } else {
                         Picasso.get().load(R.drawable.error_image).into(Coverimgv);
                     }
 
-                    // Lưu vào SQLite
-                    dbHelper.insertOrUpdateUser(name, email, phone, image, coverImg);
+                    // Lưu dữ liệu vào SQLite
+                    dbHelper.insertOrUpdateUser(uid, name, email, phone, image, coverImg);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Nếu Firebase lỗi, tải dữ liệu từ SQLite
+                Toast.makeText(getActivity(), "Firebase Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                // Thêm log để kiểm tra lỗi Firebase
+                Log.e("FirebaseError", "Error fetching data from Firebase: " + error.getMessage());
+
+                // Truy xuất từ SQLite
                 Cursor cursor = dbHelper.getUserByEmail(user.getEmail());
                 if (cursor != null && cursor.moveToFirst()) {
                     @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_NAME));
@@ -126,6 +132,13 @@ public class ProfileFragment extends Fragment {
                     @SuppressLint("Range") String phone = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_PHONE));
                     @SuppressLint("Range") String image = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE));
                     @SuppressLint("Range") String coverImg = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_COVER));
+
+                    // Ghi log để kiểm tra dữ liệu từ SQLite
+                    Log.d("SQLiteData", "Name: " + name);
+                    Log.d("SQLiteData", "Email: " + email);
+                    Log.d("SQLiteData", "Phone: " + phone);
+                    Log.d("SQLiteData", "Image Path: " + image);
+                    Log.d("SQLiteData", "Cover Path: " + coverImg);
 
                     tvName.setText(name);
                     tvEmail.setText(email);
@@ -137,9 +150,15 @@ public class ProfileFragment extends Fragment {
                     if (!TextUtils.isEmpty(coverImg)) {
                         Coverimgv.setImageURI(Uri.parse(coverImg));
                     }
+                } else {
+                    // Thêm log khi không tìm thấy dữ liệu trong SQLite
+                    Log.w("SQLiteData", "No data found in SQLite for email: " + user.getEmail());
+                }
+
+                if (cursor != null) {
+                    cursor.close();
                 }
             }
-
         });
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -151,6 +170,7 @@ public class ProfileFragment extends Fragment {
 
         return view;
     }
+
     private void showEditProfileDialogue() {
         // Các tùy chọn
         String[] options = {"Chỉnh sửa ảnh đại diện", "Chỉnh sửa ảnh bìa", "Chỉnh sửa tên", "Chỉnh sửa số điện thoại"};
@@ -267,7 +287,6 @@ public class ProfileFragment extends Fragment {
 
         builder.create().show();
     }
-
 
     private void uploadProfileCoverPhoto(String imageUrl) {
         // Hiển thị ProgressDialog

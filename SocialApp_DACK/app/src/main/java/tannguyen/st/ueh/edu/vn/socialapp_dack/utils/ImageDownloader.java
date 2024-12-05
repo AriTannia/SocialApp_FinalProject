@@ -14,6 +14,10 @@ public class ImageDownloader {
     public static void downloadImage(Context context, String url, String fileName, DownloadCallback callback) {
         new Thread(() -> {
             try {
+                if (context == null) {
+                    callback.onError(new NullPointerException("Context is null"));
+                    return;
+                }
                 // Tải ảnh bằng Picasso
                 Bitmap bitmap = Picasso.get().load(url).get();
 
