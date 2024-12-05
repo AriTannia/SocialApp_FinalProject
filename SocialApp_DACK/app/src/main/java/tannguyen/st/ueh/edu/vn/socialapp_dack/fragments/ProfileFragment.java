@@ -89,89 +89,96 @@ public class ProfileFragment extends Fragment {
 
         // Kiểm tra kết nối mạng
         if (isNetworkAvailable()) {
-            pd.show();
+            pd.show(); // Hiển thị ProgressDialog
+
             // Truy vấn Firebase
             Query query = databaseReference.orderByChild("email").equalTo(user.getEmail());
             query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    // Dữ liệu Firebase đã được tải thành công
-                    for (DataSnapshot ds : snapshot.getChildren()) {
-                        String uid = "" + ds.child("uid").getValue();
-                        String name = "" + ds.child("name").getValue();
-                        String email = "" + ds.child("email").getValue();
-                        String phone = "" + ds.child("phone").getValue();
-                        String image = "" + ds.child("image").getValue();
-                        String coverImg = "" + ds.child("cover").getValue();
+                    try {
+                        // Dữ liệu Firebase đã được tải thành công
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            String uid = "" + ds.child("uid").getValue();
+                            String name = "" + ds.child("name").getValue();
+                            String email = "" + ds.child("email").getValue();
+                            String phone = "" + ds.child("phone").getValue();
+                            String image = "" + ds.child("image").getValue();
+                            String coverImg = "" + ds.child("cover").getValue();
 
-                        // Hiển thị dữ liệu lên giao diện
-                        tvName.setText(name);
-                        tvEmail.setText(email);
-                        tvPhone.setText(phone);
+                            // Hiển thị dữ liệu lên giao diện
+                            tvName.setText(name);
+                            tvEmail.setText(email);
+                            tvPhone.setText(phone);
 
-                        if (!TextUtils.isEmpty(image)) {
-                            Picasso.get().load(image).into(imgvAvatar);
+                            if (!TextUtils.isEmpty(image)) {
+                                Picasso.get().load(image).into(imgvAvatar);
 
-                            ImageAdapter.saveImageToInternalStorage(getContext(), "image", image, new ImageAdapter.SaveImageCallback() {
-                                @Override
-                                public void onImageSaved(String filePath) {
-                                    // Cập nhật SQLite với đường dẫn file
-                                    dbHelper.updateUserInfo(user.getUid(), "image", filePath);
-                                    Log.d("ProfileFragment", "Profile image saved at: " + filePath);
-                                }
+                                ImageAdapter.saveImageToInternalStorage(getContext(), "image", image, new ImageAdapter.SaveImageCallback() {
+                                    @Override
+                                    public void onImageSaved(String filePath) {
+                                        // Cập nhật SQLite với đường dẫn file
+                                        dbHelper.updateUserInfo(user.getUid(), "image", filePath);
+                                        Log.d("ProfileFragment", "Profile image saved at: " + filePath);
+                                    }
 
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.e("ProfileFragment", "Error saving profile image: " + e.getMessage());
-                                }
-                            });
-                        } else {
-                            Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e("ProfileFragment", "Error saving profile image: " + e.getMessage());
+                                    }
+                                });
+                            } else {
+                                Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
+                            }
+
+                            if (!TextUtils.isEmpty(coverImg)) {
+                                Picasso.get().load(coverImg).into(Coverimgv);
+
+                                ImageAdapter.saveImageToInternalStorage(getContext(), "cover", coverImg, new ImageAdapter.SaveImageCallback() {
+                                    @Override
+                                    public void onImageSaved(String filePath) {
+                                        // Cập nhật SQLite với đường dẫn file ảnh bìa
+                                        dbHelper.updateUserInfo(user.getUid(), "cover", filePath);
+                                        Log.d("ProfileFragment", "Cover image saved at: " + filePath);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e("ProfileFragment", "Error saving cover image: " + e.getMessage());
+                                    }
+                                });
+                            } else {
+                                Picasso.get().load(R.drawable.error_image).into(Coverimgv);
+                            }
+
+                            // Lưu dữ liệu vào SQLite
+                            dbHelper.insertOrUpdateUser(uid, name, email, phone, image, coverImg);
                         }
-
-                        if (!TextUtils.isEmpty(coverImg)) {
-                            Picasso.get().load(coverImg).into(Coverimgv);
-
-                            ImageAdapter.saveImageToInternalStorage(getContext(), "cover", coverImg, new ImageAdapter.SaveImageCallback() {
-                                @Override
-                                public void onImageSaved(String filePath) {
-                                    // Cập nhật SQLite với đường dẫn file ảnh bìa
-                                    dbHelper.updateUserInfo(user.getUid(), "cover", filePath);
-                                    Log.d("ProfileFragment", "Cover image saved at: " + filePath);
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.e("ProfileFragment", "Error saving cover image: " + e.getMessage());
-                                }
-                            });
-                        } else {
-                            Picasso.get().load(R.drawable.error_image).into(Coverimgv);
-                        }
-
-                        // Lưu dữ liệu vào SQLite
-                        dbHelper.insertOrUpdateUser(uid, name, email, phone, image, coverImg);
+                    } finally {
+                        pd.dismiss(); // Đóng ProgressDialog dù có exception
                     }
-                    pd.dismiss(); // Đóng ProgressDialog khi tải thành công
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    // Xử lý lỗi Firebase
-                    Log.e("FirebaseError", "Error fetching data from Firebase: " + error.getMessage());
-                    Toast.makeText(getActivity(), "Firebase Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    try {
+                        // Xử lý lỗi Firebase
+                        Log.e("FirebaseError", "Error fetching data from Firebase: " + error.getMessage());
+                        Toast.makeText(getActivity(), "Firebase Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
 
-                    // Nếu không có kết nối mạng, tải dữ liệu từ SQLite
-                    if (!isNetworkAvailable()) {
-                        loadFromSQLite();
+                        // Nếu không có kết nối mạng, tải dữ liệu từ SQLite
+                        if (!isNetworkAvailable()) {
+                            loadFromSQLite();
+                        }
+                    } finally {
+                        pd.dismiss(); // Đóng ProgressDialog trong mọi trường hợp
                     }
-
-                    pd.dismiss(); // Đóng ProgressDialog khi có lỗi hoặc không có kết nối mạng
                 }
             });
         } else {
             // Nếu không có mạng, tải dữ liệu từ SQLite
             loadFromSQLite();
+            pd.dismiss(); // Đóng ProgressDialog ngay lập tức vì không cần chờ
         }
 
         // Thiết lập sự kiện click cho fab (nút chỉnh sửa hồ sơ)
