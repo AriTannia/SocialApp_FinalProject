@@ -19,6 +19,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_IMAGE = "image";
     public static final String COLUMN_COVER = "cover";
 
+    private SQLiteDatabase writableDb; // Cơ sở dữ liệu ghi
+
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -32,7 +34,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 COLUMN_PHONE + " TEXT, " +
                 COLUMN_IMAGE + " TEXT, " +
                 COLUMN_COVER + " TEXT" + ")";
-
         db.execSQL(createTable);
     }
 
@@ -42,8 +43,16 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    // Lấy SQLiteDatabase ghi và lưu trữ để tái sử dụng
+    private SQLiteDatabase getWritableDb() {
+        if (writableDb == null || !writableDb.isOpen()) {
+            writableDb = this.getWritableDatabase();
+        }
+        return writableDb;
+    }
+
     public boolean isUserExists(String uid) {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = getWritableDb();
         Cursor cursor = db.query(
                 TABLE_USERS,            // Table name
                 new String[]{COLUMN_UID}, // Select uid column
@@ -58,39 +67,32 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         return exists;
     }
 
-    public void insertOrUpdateUser(String uid, String name, String email, String phone, String image, String cover) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public void insertOrUpdateUser(String uid, String name, String email, String phone, String imagePath, String coverPath) {
+        SQLiteDatabase db = getWritableDb();
         ContentValues values = new ContentValues();
         values.put(COLUMN_UID, uid);
         values.put(COLUMN_NAME, name);
         values.put(COLUMN_EMAIL, email);
         values.put(COLUMN_PHONE, phone);
-        values.put(COLUMN_IMAGE, image);
-        values.put(COLUMN_COVER, cover);
+        values.put(COLUMN_IMAGE, imagePath); // Lưu đường dẫn nội bộ thay vì URL
+        values.put(COLUMN_COVER, coverPath); // Lưu đường dẫn nội bộ thay vì URL
 
         if (isUserExists(uid)) {
             int rowsAffected = db.update(TABLE_USERS, values, COLUMN_UID + "=?", new String[]{uid});
             Log.d("SQLiteHelper", "Updated user with UID: " + uid + ", Rows affected: " + rowsAffected);
-            Log.d("SQLiteHelper", "User data: " +
-                    "Name: " + name +
-                    ", Email: " + email +
-                    ", Phone: " + phone +
-                    ", Image: " + image +
-                    ", Cover: " + cover);
         } else {
             long rowId = db.insert(TABLE_USERS, null, values);
             Log.d("SQLiteHelper", "Inserted new user with UID: " + uid + ", Row ID: " + rowId);
         }
-        db.close();
     }
 
     public Cursor getUserByEmail(String email) {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = getWritableDb();
         return db.query(TABLE_USERS, null, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
     }
 
     public void updateUserInfo(String uid, String key, String value) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = getWritableDb();
         ContentValues values = new ContentValues();
 
         // Tùy thuộc vào key, bạn cập nhật giá trị tương ứng trong SQLite
@@ -114,7 +116,14 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
         // Cập nhật thông tin vào SQLite
         db.update(TABLE_USERS, values, COLUMN_UID + "=?", new String[]{uid});
-        db.close();
+    }
+
+    // Đóng kết nối khi không còn cần thiết
+    @Override
+    public synchronized void close() {
+        if (writableDb != null && writableDb.isOpen()) {
+            writableDb.close();
+        }
+        super.close();
     }
 }
-

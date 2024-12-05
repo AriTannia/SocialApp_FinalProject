@@ -4,25 +4,21 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.HomeActivity;
-import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.MainActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.utils.ImageDownloader;
 
 public class ImageAdapter {
-    public static void saveImageToInternalStorage(Context context, String profileOrCoverPhoto, String imageUrl) {
+
+    public interface SaveImageCallback {
+        void onImageSaved(String filePath); // Trả về đường dẫn khi ảnh được lưu
+        void onError(Exception e); // Xử lý lỗi
+    }
+
+    public static void saveImageToInternalStorage(Context context, String profileOrCoverPhoto, String imageUrl, SaveImageCallback callback) {
 
         // Kiểm tra URL trước khi xử lý
         if (TextUtils.isEmpty(imageUrl) || "null".equals(imageUrl)) {
-            if (context instanceof MainActivity) {
-                ((MainActivity) context).runOnUiThread(() ->
-                        Toast.makeText(context, "URL ảnh không hợp lệ. Không thể lưu ảnh.", Toast.LENGTH_SHORT).show()
-                );
-            } else if (context instanceof HomeActivity) {
-                ((HomeActivity) context).runOnUiThread(() ->
-                        Toast.makeText(context, "URL ảnh không hợp lệ. Không thể lưu ảnh.", Toast.LENGTH_SHORT).show()
-                );
-            }
-            return; // Thoát sớm vì URL không hợp lệ
+            callback.onError(new IllegalArgumentException("URL ảnh không hợp lệ."));
+            return;
         }
 
         String fileName = profileOrCoverPhoto.equals("image") ? "profile_image.jpg" : "cover_image.jpg";
@@ -30,34 +26,15 @@ public class ImageAdapter {
         ImageDownloader.downloadImage(context, imageUrl, fileName, new ImageDownloader.DownloadCallback() {
             @Override
             public void onSuccess(String filePath) {
-                // Đảm bảo chạy trên UI thread khi hiển thị Toast
-                if (context instanceof MainActivity) {
-                    ((MainActivity) context).runOnUiThread(() -> {
-                        Toast.makeText(context, "Ảnh đã được lưu: " + filePath, Toast.LENGTH_SHORT).show();
-                        System.out.println("Image saved at: " + filePath); // In ra log
-                    });
-                } else if (context instanceof HomeActivity) {
-                    ((HomeActivity) context).runOnUiThread(() -> {
-                        Toast.makeText(context, "Ảnh đã được lưu: " + filePath, Toast.LENGTH_SHORT).show();
-                        System.out.println("Image saved at: " + filePath); // In ra log
-                    });
-                }
+                // Trả về đường dẫn qua callback
+                callback.onImageSaved(filePath);
             }
 
             @Override
             public void onError(Exception e) {
-                // Đảm bảo chạy trên UI thread khi hiển thị Toast
-                if (context instanceof MainActivity) {
-                    ((MainActivity) context).runOnUiThread(() -> {
-                        Toast.makeText(context, "Lỗi khi tải ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-                } else if (context instanceof HomeActivity) {
-                    ((HomeActivity) context).runOnUiThread(() -> {
-                        Toast.makeText(context, "Lỗi khi tải ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-                }
+                // Trả về lỗi qua callback
+                callback.onError(e);
             }
         });
     }
-
 }

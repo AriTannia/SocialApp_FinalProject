@@ -41,6 +41,7 @@ import androidx.appcompat.app.AlertDialog;
 import java.util.HashMap;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.ImageAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.utils.ImageDownloader;
@@ -97,17 +98,42 @@ public class ProfileFragment extends Fragment {
                     tvEmail.setText(email);
                     tvPhone.setText(phone);
 
-                    // Lưu ảnh vào bộ nhớ trong
                     if (!TextUtils.isEmpty(image)) {
                         Picasso.get().load(image).into(imgvAvatar);
-                        saveImageToInternalStorage(getContext(), "image", image);
+
+                        ImageAdapter.saveImageToInternalStorage(getContext(), "image", image, new ImageAdapter.SaveImageCallback() {
+                            @Override
+                            public void onImageSaved(String filePath) {
+                                // Cập nhật SQLite với đường dẫn file
+                                dbHelper.updateUserInfo(user.getUid(), "image", filePath);
+                                Log.d("ProfileFragment", "Profile image saved at: " + filePath);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e("ProfileFragment", "Error saving profile image: " + e.getMessage());
+                            }
+                        });
                     } else {
                         Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
                     }
 
                     if (!TextUtils.isEmpty(coverImg)) {
                         Picasso.get().load(coverImg).into(Coverimgv);
-                        saveImageToInternalStorage(getContext(), "cover", coverImg);
+
+                        ImageAdapter.saveImageToInternalStorage(getContext(), "cover", coverImg, new ImageAdapter.SaveImageCallback() {
+                            @Override
+                            public void onImageSaved(String filePath) {
+                                // Cập nhật SQLite với đường dẫn file ảnh bìa
+                                dbHelper.updateUserInfo(user.getUid(), "cover", filePath);
+                                Log.d("ProfileFragment", "Cover image saved at: " + filePath);
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e("ProfileFragment", "Error saving cover image: " + e.getMessage());
+                            }
+                        });
                     } else {
                         Picasso.get().load(R.drawable.error_image).into(Coverimgv);
                     }
@@ -316,7 +342,19 @@ public class ProfileFragment extends Fragment {
                             .addOnSuccessListener(unused -> {
                                 pd.dismiss();
                                 // Lưu ảnh vào bộ nhớ trong và cập nhật vào SQLite
-                                saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl);
+                                saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl, new ImageAdapter.SaveImageCallback() {
+                                    @Override
+                                    public void onImageSaved(String filePath) {
+                                        // Thêm logic nếu cần
+                                        dbHelper.updateUserInfo(uid, profileOrCoverPhoto, filePath);
+                                        Log.d("ProfileFragment", "Image saved at: " + filePath);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e("ProfileFragment", "Error saving image: " + e.getMessage());
+                                    }
+                                });
 
                                 // Cập nhật vào SQLite sau khi cập nhật Firebase thành công
                                 dbHelper.updateUserInfo(uid, profileOrCoverPhoto, imageUrl);
