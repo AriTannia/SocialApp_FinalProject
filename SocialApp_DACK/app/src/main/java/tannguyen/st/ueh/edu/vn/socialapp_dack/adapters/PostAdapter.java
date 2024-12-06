@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.CommentActivity;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.PostDetailActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
@@ -69,6 +70,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 // Handle "Save" action
                 Toast.makeText(context, "Saved: " + post.getTitle(), Toast.LENGTH_SHORT).show();
             });
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, PostDetailActivity.class);
+                intent.putExtra("POST_ID", post.getId());  // Truyền ID bài viết
+                context.startActivity(intent);
+            });
+
         }
     }
 
