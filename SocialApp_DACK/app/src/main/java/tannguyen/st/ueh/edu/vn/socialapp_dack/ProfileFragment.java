@@ -34,12 +34,17 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.PostAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class ProfileFragment extends Fragment {
 
@@ -51,7 +56,10 @@ public class ProfileFragment extends Fragment {
     private FirebaseDatabase FB_database;
     private DatabaseReference databaseReference;
     private SQLiteHelper dbHelper;
-
+    private RecyclerView recyclerViewPosts;
+    private PostAdapter postAdapter;
+    private List<Post> postList;
+    private DatabaseReference postsRef;
     ProgressDialog pd;
 
     Uri img_uri;
@@ -76,6 +84,14 @@ public class ProfileFragment extends Fragment {
         user = mAuth.getCurrentUser();
         FB_database = FirebaseDatabase.getInstance();
         databaseReference = FB_database.getReference("Users");
+        postsRef = FirebaseDatabase.getInstance().getReference("Posts");
+
+        postList = new ArrayList<>();
+        String currentUserId = user != null ? user.getUid() : null;
+
+        // Initialize PostAdapter and set to RecyclerView
+        postAdapter = new PostAdapter(getActivity(), postList, currentUserId);
+        recyclerViewPosts.setAdapter(postAdapter);
 
         Query query = databaseReference.orderByChild("email").equalTo(user.getEmail());
         query.addValueEventListener(new ValueEventListener() {

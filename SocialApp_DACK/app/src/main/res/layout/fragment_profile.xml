@@ -7,7 +7,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_above="@id/fab">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -22,9 +23,7 @@
                     android:id="@+id/Cover_iv"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:contentDescription="@string/cover_image">
-
-                </ImageView>
+                    android:contentDescription="@string/cover_image" />
             </RelativeLayout>
 
             <LinearLayout
@@ -79,9 +78,17 @@
                         android:text="Phone"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp" />
-
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- RecyclerView for the posts -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_posts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/profile_image_container"
+                android:layout_marginTop="16dp"
+                tools:listitem="@layout/post_item" />
 
         </RelativeLayout>
     </ScrollView>
@@ -94,8 +101,5 @@
         android:layout_alignParentEnd="true"
         android:src="@drawable/baseline_app_registration_24"
         android:contentDescription="@string/edit_profile"
-        android:layout_margin="10dp">
-
-    </com.google.android.material.floatingactionbutton.FloatingActionButton>
-
+        android:layout_margin="10dp" />
 </RelativeLayout>
