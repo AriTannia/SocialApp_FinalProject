@@ -4,11 +4,17 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -54,6 +60,52 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         } else {
             holder.deleteButton.setVisibility(View.GONE);
         }
+        // Hiển thị nút "Sửa" nếu bình luận thuộc về người dùng hiện tại
+        if (comment.getUserId().equals(currentUserId)) {
+            holder.editButton.setVisibility(View.VISIBLE);
+        } else {
+            holder.editButton.setVisibility(View.GONE);
+        }
+
+        // Xử lý nút "Sửa"
+        holder.editButton.setOnClickListener(v -> {
+            // Chuyển sang chế độ chỉnh sửa
+            holder.commentContent.setVisibility(View.GONE);
+            holder.editTextComment.setVisibility(View.VISIBLE);
+            holder.editTextComment.setText(comment.getContent());
+            holder.saveButton.setVisibility(View.VISIBLE);
+            holder.editButton.setVisibility(View.GONE);
+        });
+
+        // Xử lý nút "Lưu"
+        holder.saveButton.setOnClickListener(v -> {
+            String newContent = holder.editTextComment.getText().toString();
+            if (newContent.isEmpty()) {
+                Toast.makeText(context, "Comment cannot be empty!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Cập nhật Firebase
+            DatabaseReference commentRef = FirebaseDatabase.getInstance()
+                    .getReference("comments")
+                    .child(comment.getPostId())
+                    .child(comment.getId());
+
+            commentRef.child("content").setValue(newContent).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Comment updated successfully", Toast.LENGTH_SHORT).show();
+
+                    // Cập nhật giao diện
+                    holder.commentContent.setVisibility(View.VISIBLE);
+                    holder.commentContent.setText(newContent);
+                    holder.editTextComment.setVisibility(View.GONE);
+                    holder.saveButton.setVisibility(View.GONE);
+                    holder.editButton.setVisibility(View.VISIBLE);
+                } else {
+                    Toast.makeText(context, "Failed to update comment", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
 
     @Override
@@ -68,6 +120,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     public static class CommentViewHolder extends RecyclerView.ViewHolder {
         TextView commentUserName, commentContent, commentTimestamp;
         ImageButton deleteButton;
+        EditText editTextComment;
+        Button editButton, saveButton;
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,6 +129,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             commentContent = itemView.findViewById(R.id.commentContent);
             commentTimestamp = itemView.findViewById(R.id.commentTimestamp);
             deleteButton = itemView.findViewById(R.id.buttonDeleteComment);
+            editTextComment = itemView.findViewById(R.id.editTextEditComment);
+            editButton = itemView.findViewById(R.id.buttonEditComment);
+            saveButton = itemView.findViewById(R.id.buttonSaveComment);
         }
     }
 }

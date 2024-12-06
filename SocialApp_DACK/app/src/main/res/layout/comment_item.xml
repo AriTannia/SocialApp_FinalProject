@@ -25,10 +25,45 @@
         android:textSize="12sp"
         android:textColor="#666" />
 
-    <ImageButton
-        android:id="@+id/buttonDeleteComment"
-        android:layout_width="wrap_content"
+    <!-- Chế độ chỉnh sửa -->
+    <EditText
+        android:id="@+id/editTextEditComment"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_delete"
-        android:visibility="gone" />
+        android:hint="Edit comment"
+        android:visibility="gone"
+        android:background="@drawable/edit_text_background" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="8dp">
+
+        <Button
+            android:id="@+id/buttonEditComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit"
+            android:background="@color/design_default_color_primary"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/buttonSaveComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:visibility="gone"
+            android:layout_marginStart="8dp"
+            android:background="@color/colorAccent"
+            android:textColor="#FFFFFF" />
+        <ImageButton
+            android:id="@+id/buttonDeleteComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_delete"
+            android:visibility="gone" />
+    </LinearLayout>
+
+
 </LinearLayout>

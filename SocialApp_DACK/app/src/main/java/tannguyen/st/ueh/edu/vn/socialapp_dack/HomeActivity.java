@@ -103,6 +103,7 @@ public class HomeActivity extends AppCompatActivity {
         postsRef = mDatabase.getReference("posts");
 
         postList = new ArrayList<>(); // Initialize the list of posts
+
         postAdapter = new PostAdapter(this, postList); // Initialize the adapter with the list
 
         // Load posts from Firebase

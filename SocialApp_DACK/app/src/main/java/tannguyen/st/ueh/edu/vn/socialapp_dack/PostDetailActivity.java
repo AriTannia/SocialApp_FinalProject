@@ -55,7 +55,7 @@ public class PostDetailActivity extends AppCompatActivity {
         buttonSendComment = findViewById(R.id.buttonSendComment);
 
         // Lấy ID bài viết từ Intent
-        currentPostId = getIntent().getStringExtra("POST_ID");
+        currentPostId = getIntent().getStringExtra("postId");
         if (currentPostId == null) {
             Toast.makeText(this, "Post ID is missing!", Toast.LENGTH_SHORT).show();
             finish();

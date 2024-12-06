@@ -7,6 +7,7 @@ public class Post {
     private long timestamp;
     private String posterName;
 
+
     // Constructor mặc định cần cho Firebase
     public Post() {}
 
@@ -16,6 +17,7 @@ public class Post {
         this.content = content;
         this.timestamp = timestamp;
         this.posterName = posterName;
+
     }
 
     // Getters và Setters
@@ -37,5 +39,6 @@ public class Post {
     public void setPosterName(String posterName) {
         this.posterName = posterName;
     }
+
 }
 

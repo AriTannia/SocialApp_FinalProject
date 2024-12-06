@@ -64,6 +64,30 @@
             android:contentDescription="Save Button"
             android:layout_marginStart="16dp" />
     </LinearLayout>
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:paddingTop="8dp">-->
 
+<!--        <Button-->
+<!--            android:id="@+id/buttonEditPost"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Edit"-->
+<!--            android:visibility="gone"-->
+<!--            android:background="@color/colorAccent"-->
+<!--            android:textColor="#FFFFFF" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/buttonDeletePost"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Delete"-->
+<!--            android:visibility="gone"-->
+<!--            android:layout_marginStart="8dp"-->
+<!--            android:background="@color/colorRed"-->
+<!--            android:textColor="#FFFFFF" />-->
+<!--    </LinearLayout>-->
 </LinearLayout>
 </androidx.cardview.widget.CardView>
