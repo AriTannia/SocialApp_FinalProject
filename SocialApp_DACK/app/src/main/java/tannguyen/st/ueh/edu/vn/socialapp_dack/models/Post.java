@@ -5,22 +5,20 @@ public class Post {
     private String title;       // Tiêu đề bài viết
     private String content;     // Nội dung bài viết
     private long timestamp;     // Dấu thời gian của bài viết
-    private String posterName;  // Tên của người đăng bài
     private String imageUrl;    // Đường dẫn đến hình ảnh của bài viết
-    private String posterAvatar; // URL avatar của người dùng
+    private String posterUid;   // UID của người đăng bài
 
     // Constructor mặc định (cần thiết cho Firebase)
     public Post() {}
 
     // Constructor đầy đủ để tạo một bài viết mới
-    public Post(String id, String title, String content, long timestamp, String posterName, String imageUrl, String posterAvatar) {
+    public Post(String id, String title, String content, long timestamp, String imageUrl, String posterUid) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.timestamp = timestamp;
-        this.posterName = posterName;
         this.imageUrl = imageUrl;
-        this.posterAvatar = posterAvatar;
+        this.posterUid = posterUid;
     }
 
     // Getters và Setters
@@ -36,17 +34,9 @@ public class Post {
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
-    public String getPosterName() { return posterName; }
-    public void setPosterName(String posterName) { this.posterName = posterName; }
-
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getPosterAvatar() {
-        return posterAvatar;
-    }
-
-    public void setPosterAvatar(String posterAvatar) {
-        this.posterAvatar = posterAvatar;
-    }
+    public String getPosterUid() { return posterUid; }
+    public void setPosterUid(String posterUid) { this.posterUid = posterUid; }
 }

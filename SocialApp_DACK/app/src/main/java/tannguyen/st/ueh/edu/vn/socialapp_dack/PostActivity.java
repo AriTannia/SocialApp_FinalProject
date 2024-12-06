@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,7 +42,7 @@ public class PostActivity extends AppCompatActivity {
         contentEditText = findViewById(R.id.editTextContent);
         imageUrlEditText = findViewById(R.id.editTextImageUrl);
         userTextView = findViewById(R.id.textViewUser);
-        imagePreview = findViewById(R.id.imagePreview);  // ImageView để hiển thị ảnh
+        imagePreview = findViewById(R.id.imagePreview);
 
         databaseHelper = new SQLiteHelper(this);
         firebaseDatabase = FirebaseDatabase.getInstance().getReference("posts");
@@ -51,13 +50,10 @@ public class PostActivity extends AppCompatActivity {
         // Kiểm tra xem người dùng đã đăng nhập chưa
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            String posterName = currentUser.getDisplayName();
-            if (posterName == null || posterName.isEmpty()) {
-                posterName = currentUser.getEmail();
-            }
-            userTextView.setText("Posted by: " + posterName);
+            String posterUid = currentUser.getUid();
+            loadUserInfo(posterUid); // Tải thông tin người dùng
         } else {
-            Toast.makeText(this, "You need to be logged in to post.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bạn cần đăng nhập để đăng bài.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -70,11 +66,10 @@ public class PostActivity extends AppCompatActivity {
             if (!hasFocus) {
                 String imageUrl = imageUrlEditText.getText().toString();
                 if (!TextUtils.isEmpty(imageUrl)) {
-                    // Sử dụng Picasso để tải ảnh từ URL
                     Picasso.get().load(imageUrl).into(imagePreview);
-                    imagePreview.setVisibility(View.VISIBLE); // Hiển thị ImageView
+                    imagePreview.setVisibility(View.VISIBLE);
                 } else {
-                    imagePreview.setVisibility(View.GONE); // Ẩn ImageView nếu không có URL
+                    imagePreview.setVisibility(View.GONE);
                 }
             }
         });
@@ -87,37 +82,48 @@ public class PostActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> navigateToHomeActivity());
     }
 
+    private void loadUserInfo(String uid) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+        userRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult().exists()) {
+                String name = task.getResult().child("name").getValue(String.class);
+                userTextView.setText("Posted by: " + (name != null ? name : "Unknown User"));
+            } else {
+                Log.e("Firebase", "Không thể tải thông tin người dùng.");
+            }
+        }).addOnFailureListener(e -> Log.e("Firebase", "Lỗi: " + e.getMessage()));
+    }
+
     private void createPost() {
         String title = titleEditText.getText().toString();
         String content = contentEditText.getText().toString();
         String imageUrl = imageUrlEditText.getText().toString();
 
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(content)) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng điền đầy đủ các trường.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            String posterName = currentUser.getDisplayName();
-            if (posterName == null || posterName.isEmpty()) {
-                posterName = currentUser.getEmail();
-            }
+            String posterUid = currentUser.getUid();
 
             String id = UUID.randomUUID().toString();
             long timestamp = System.currentTimeMillis();
-            String posterAvatar = currentUser.getPhotoUrl() != null ? currentUser.getPhotoUrl().toString() : "https://your-default-avatar-url.com";
 
-            Post post = new Post(id, title, content, timestamp, posterName, imageUrl, posterAvatar);
+            // Tạo bài viết mới
+            Post post = new Post(id, title, content, timestamp, imageUrl, posterUid);
 
+            // Lưu bài viết vào SQLite (nếu cần)
             databaseHelper.addPost(post);
 
+            // Lưu bài viết lên Firebase Realtime Database
             firebaseDatabase.child(id).setValue(post).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Toast.makeText(this, "Post created successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Đăng bài thành công.", Toast.LENGTH_SHORT).show();
                     navigateToHomeActivity();
                 } else {
-                    Toast.makeText(this, "Failed to post", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Đăng bài thất bại.", Toast.LENGTH_SHORT).show();
                 }
             });
         }

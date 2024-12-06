@@ -17,67 +17,73 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:title="Create Post" />
 
-    <!-- Content Layout -->
-    <LinearLayout
+    <!-- ScrollView for the content -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:layout_marginTop="?attr/actionBarSize">
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:fillViewport="true">
 
-
-        <!-- Title -->
-        <EditText
-            android:id="@+id/editTextTitle"
+        <!-- Content Layout -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"
-            android:inputType="text"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <!-- Content -->
-        <EditText
-            android:id="@+id/editTextContent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Content"
-            android:inputType="textMultiLine"
-            android:layout_marginBottom="8dp"
-            android:minHeight="100dp"/>
+            <!-- Title -->
+            <EditText
+                android:id="@+id/editTextTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Title"
+                android:inputType="text"
+                android:layout_marginBottom="8dp" />
 
-        <!-- Image URL -->
-        <EditText
-            android:id="@+id/editTextImageUrl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Image URL (optional)"
-            android:inputType="textUri"
-            android:layout_marginBottom="8dp"/>
+            <!-- Content -->
+            <EditText
+                android:id="@+id/editTextContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Content"
+                android:inputType="textMultiLine"
+                android:layout_marginBottom="8dp"
+                android:minHeight="100dp" />
 
-        <!-- Display Image -->
-        <ImageView
-            android:id="@+id/imagePreview"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginBottom="16dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone" />
+            <!-- Image URL -->
+            <EditText
+                android:id="@+id/editTextImageUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Image URL (optional)"
+                android:inputType="textUri"
+                android:layout_marginBottom="8dp" />
 
-        <!-- User Info -->
-        <TextView
-            android:id="@+id/textViewUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Posted by: User"
-            android:layout_marginBottom="16dp"/>
+            <!-- Display Image -->
+            <ImageView
+                android:id="@+id/imagePreview"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="16dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
 
-        <!-- Post Button -->
-        <Button
-            android:id="@+id/buttonPost"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Post"
-            android:layout_gravity="center_horizontal"/>
-    </LinearLayout>
+            <!-- User Info -->
+            <TextView
+                android:id="@+id/textViewUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Posted by: User"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Post Button -->
+            <Button
+                android:id="@+id/buttonPost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Post"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

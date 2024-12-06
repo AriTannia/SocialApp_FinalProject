@@ -11,7 +11,7 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 public class SQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 2; // Cập nhật phiên bản cơ sở dữ liệu
+    private static final int DATABASE_VERSION = 3; // Cập nhật phiên bản cơ sở dữ liệu
 
     // Bảng người dùng
     public static final String TABLE_USERS = "Users";
@@ -27,9 +27,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TITLE = "title";
     private static final String COLUMN_CONTENT = "content";
     private static final String COLUMN_TIMESTAMP = "timestamp";
-    private static final String COLUMN_POSTER_NAME = "posterName";
     private static final String COLUMN_IMAGE_URL = "imageUrl";
-    private static final String COLUMN_POSTER_AVATAR = "posterAvatar";
+    private static final String COLUMN_POSTER_UID = "posterUid"; // Thay thế posterName và posterAvatar
 
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -49,13 +48,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
         // Tạo bảng bài viết
         String createPostsTable = "CREATE TABLE " + TABLE_POSTS + "(" +
-                COLUMN_ID + " TEXT PRIMARY KEY, " +  // Đặt id làm khóa chính (theo kiểu String)
+                COLUMN_ID + " TEXT PRIMARY KEY, " + // Đặt id làm khóa chính (theo kiểu String)
                 COLUMN_TITLE + " TEXT, " +
                 COLUMN_CONTENT + " TEXT, " +
                 COLUMN_TIMESTAMP + " INTEGER, " +
-                COLUMN_POSTER_NAME + " TEXT, " +
                 COLUMN_IMAGE_URL + " TEXT, " +
-                COLUMN_POSTER_AVATAR + " TEXT" + ")";
+                COLUMN_POSTER_UID + " TEXT" + // Lưu UID của người đăng bài
+                ")";
         db.execSQL(createPostsTable);
     }
 
@@ -96,9 +95,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TITLE, post.getTitle());
         values.put(COLUMN_CONTENT, post.getContent());
         values.put(COLUMN_TIMESTAMP, post.getTimestamp());
-        values.put(COLUMN_POSTER_NAME, post.getPosterName());
         values.put(COLUMN_IMAGE_URL, post.getImageUrl());
-        values.put(COLUMN_POSTER_AVATAR, post.getPosterAvatar());
+        values.put(COLUMN_POSTER_UID, post.getPosterUid()); // Lưu UID thay vì posterName và posterAvatar
 
         db.insert(TABLE_POSTS, null, values);
         db.close();
@@ -108,5 +106,18 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public Cursor getAllPosts() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TABLE_POSTS, null, null, null, null, null, COLUMN_TIMESTAMP + " DESC");
+    }
+
+    // Lấy bài viết theo ID
+    public Cursor getPostById(String postId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_POSTS, null, COLUMN_ID + "=?", new String[]{postId}, null, null, null);
+    }
+
+    // Xóa bài viết
+    public void deletePost(String postId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_POSTS, COLUMN_ID + "=?", new String[]{postId});
+        db.close();
     }
 }
