@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -21,11 +20,9 @@ import androidx.core.view.MenuItemCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.View;
-import android.widget.Button;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -42,10 +39,16 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.PostAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
+
 public class HomeActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
-
+    private DatabaseReference postsRef; // Firebase reference to posts node
+    private List<Post> postList; // List to hold posts data
+    private PostAdapter postAdapter; // Adapter to display posts
+    private FirebaseDatabase mDatabase;
     private BottomNavigationView bottomNavigationView;
 
     @Override
@@ -53,43 +56,99 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
+
+        // Set up insets for edge-to-edge display
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.Home_main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0,systemBars.top,0,0);
+            v.setPadding(0, systemBars.top, 0, 0);
             return insets;
         });
 
+        // Set up Toolbar and Bottom Navigation
         Toolbar toolbar = findViewById(R.id.toolbar);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         setSupportActionBar(toolbar);
 
-        // Khởi tạo FirebaseAuth
+        // Initialize FirebaseAuth and GoogleSignInClient
         mAuth = FirebaseAuth.getInstance();
-
-        // Khởi tạo GoogleSignInClient
         mGoogleSignInClient = GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build());
 
+        // Bottom Navigation Item Selection Logic
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
+            int itemId = item.getItemId(); // Get the selected menu item ID
 
-            int itemId = item.getItemId(); // Lấy ID của menu được chọn
             if (itemId == R.id.action_home) {
-
+                selectedFragment = new HomeFragment();
             } else if (itemId == R.id.action_add) {
-
-            }  else if (itemId == R.id.action_other_users) {
+                // Transition to PostActivity to create a new post
+                Intent intent = new Intent(HomeActivity.this, PostActivity.class);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.action_other_users) {
                 selectedFragment = new UsersFragment();
             } else if (itemId == R.id.action_personal) {
                 selectedFragment = new ProfileFragment();
             }
-            // Kiểm tra nếu selectedFragment không null, thay thế fragment hiện tại
+
+            // Replace current fragment with the selected one
             if (selectedFragment != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, selectedFragment)
-                        .commit();
+                replaceFragment(selectedFragment);
+            }
+            return true;
+        });
+
+        // Initialize Firebase Database and Posts Reference
+        mDatabase = FirebaseDatabase.getInstance();
+        postsRef = mDatabase.getReference("posts");
+
+        postList = new ArrayList<>(); // Initialize the list of posts
+        postAdapter = new PostAdapter(this, postList); // Initialize the adapter with the list
+
+        // Load posts from Firebase
+        loadPosts();
+    }
+
+    // Method to replace the fragment
+    private void replaceFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null); // Add to back stack to allow navigation back to previous fragment
+        transaction.commit();
+    }
+
+    // Method to sign out the user
+    private void signOut() {
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                mAuth.signOut();
+                Toast.makeText(HomeActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(HomeActivity.this, MainActivity.class); // Transition to MainActivity
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(HomeActivity.this, "Đăng xuất thất bại!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Method to load posts from Firebase
+    private void loadPosts() {
+        postsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                postList.clear(); // Clear previous data
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Post post = snapshot.getValue(Post.class);
+                    postList.add(post); // Add post to the list
+                }
+                postAdapter.notifyDataSetChanged(); // Notify adapter to update the view
             }
 
-            return true;
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(HomeActivity.this, "Không thể tải bài viết.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -98,30 +157,12 @@ public class HomeActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_logout) {
-            // Thực hiện signOut khi người dùng chọn Logout
+            // Perform sign out when user clicks logout
             signOut();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void openUsersFragment(String query) {
-        // Tạo hoặc lấy fragment hiện tại
-        UsersFragment fragment = (UsersFragment) getSupportFragmentManager().findFragmentByTag("USERS_FRAGMENT");
-        Log.d("Fragment hiện tại", String.valueOf(fragment));
-
-        if (fragment == null) {
-            // Nếu chưa có fragment, tạo mới và thay thế
-            fragment = new UsersFragment();
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, fragment, "USERS_FRAGMENT")
-                    .addToBackStack(null)
-                    .commit();
-        }
-
-        fragment.searchUsers(query);
     }
 
     @Override
@@ -136,9 +177,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!TextUtils.isEmpty(query.trim())) {
-                    openUsersFragment(query); // Gọi tìm kiếm với từ khóa
+                    openUsersFragment(query); // Search with query
                 } else {
-                    openUsersFragment(""); // Nếu không có từ khóa, lấy tất cả người dùng
+                    openUsersFragment(""); // If query is empty, show all users
                 }
                 return false;
             }
@@ -146,9 +187,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (!TextUtils.isEmpty(newText.trim())) {
-                    openUsersFragment(newText); // Cập nhật tìm kiếm theo mỗi ký tự nhập vào
+                    openUsersFragment(newText); // Update search results as user types
                 } else {
-                    openUsersFragment(""); // Nếu không có từ khóa, lấy tất cả người dùng
+                    openUsersFragment(""); // If query is empty, show all users
                 }
                 return false;
             }
@@ -157,21 +198,13 @@ public class HomeActivity extends AppCompatActivity {
         return true;
     }
 
-
-    private void signOut() {
-        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-            if (task.isSuccessful()) {
-                mAuth.signOut();
-                Toast.makeText(HomeActivity.this, "Đã đăng xuất thành công!", Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent(HomeActivity.this, MainActivity.class); // Chuyển về MainActivity
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(HomeActivity.this, "Đăng xuất thất bại!", Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void openUsersFragment(String query) {
+        UsersFragment fragment = new UsersFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+        fragment.searchUsers(query);
     }
-
-
 }
