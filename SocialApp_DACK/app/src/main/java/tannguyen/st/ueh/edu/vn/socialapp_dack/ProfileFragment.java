@@ -1,12 +1,16 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,12 +38,15 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterUsers;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.ImageAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.PostAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
@@ -60,6 +67,7 @@ public class ProfileFragment extends Fragment {
     private PostAdapter postAdapter;
     private List<Post> postList;
     private DatabaseReference postsRef;
+    private FirebaseUser currentUser;
     ProgressDialog pd;
 
     Uri img_uri;
@@ -78,79 +86,121 @@ public class ProfileFragment extends Fragment {
         fab = view.findViewById(R.id.fab);
         dbHelper = new SQLiteHelper(getContext());
 
+        recyclerViewPosts = view.findViewById(R.id.recycler_view_posts);
+        recyclerViewPosts.setLayoutManager(new LinearLayoutManager(getContext()));
+
         pd = new ProgressDialog(getActivity());
 
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
         FB_database = FirebaseDatabase.getInstance();
         databaseReference = FB_database.getReference("Users");
-        postsRef = FirebaseDatabase.getInstance().getReference("Posts");
 
+        // Initialize post list and adapter
         postList = new ArrayList<>();
-        String currentUserId = user != null ? user.getUid() : null;
-
-        // Initialize PostAdapter and set to RecyclerView
-        postAdapter = new PostAdapter(getActivity(), postList, currentUserId);
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = (currentUser != null) ? currentUser.getUid() : null;
+        postAdapter = new PostAdapter(getContext(), postList,userId);
         recyclerViewPosts.setAdapter(postAdapter);
 
-        Query query = databaseReference.orderByChild("email").equalTo(user.getEmail());
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot ds : snapshot.getChildren()) {
-                    String name = ""+ ds.child("name").getValue();
-                    String email = ""+ ds.child("email").getValue();
-                    String phone = ""+ ds.child("phone").getValue();
-                    String image = ""+ ds.child("image").getValue();
-                    String coverImg = ""+ ds.child("cover").getValue();
+        // Firebase reference
+        postsRef = FirebaseDatabase.getInstance().getReference("posts");
 
-                    tvName.setText(name);
-                    tvEmail.setText(email);
-                    tvPhone.setText(phone);
+        // Load posts
+        loadPosts();
+        // Kiểm tra kết nối mạng
+        if (isNetworkAvailable()) {
+            pd.show(); // Hiển thị ProgressDialog
 
-                    // Kiểm tra và tải ảnh
-                    if (!TextUtils.isEmpty(image)) {
-                        Picasso.get().load(image).into(imgvAvatar);
-                    } else {
-                        Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
+            // Truy vấn Firebase
+            Query query = databaseReference.orderByChild("email").equalTo(user.getEmail());
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    try {
+                        // Dữ liệu Firebase đã được tải thành công
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            String uid = "" + ds.child("uid").getValue();
+                            String name = "" + ds.child("name").getValue();
+                            String email = "" + ds.child("email").getValue();
+                            String phone = "" + ds.child("phone").getValue();
+                            String image = "" + ds.child("image").getValue();
+                            String coverImg = "" + ds.child("cover").getValue();
+
+                            // Hiển thị dữ liệu lên giao diện
+                            tvName.setText(name);
+                            tvEmail.setText(email);
+                            tvPhone.setText(phone);
+
+                            if (!TextUtils.isEmpty(image)) {
+                                Picasso.get().load(image).into(imgvAvatar);
+
+                                ImageAdapter.saveImageToInternalStorage(getContext(), "image", image, new ImageAdapter.SaveImageCallback() {
+                                    @Override
+                                    public void onImageSaved(String filePath) {
+                                        // Cập nhật SQLite với đường dẫn file
+                                        dbHelper.updateUserInfo(user.getUid(), "image", filePath);
+                                        Log.d("ProfileFragment", "Profile image saved at: " + filePath);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e("ProfileFragment", "Error saving profile image: " + e.getMessage());
+                                    }
+                                });
+                            } else {
+                                Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
+                            }
+
+                            if (!TextUtils.isEmpty(coverImg)) {
+                                Picasso.get().load(coverImg).into(Coverimgv);
+
+                                ImageAdapter.saveImageToInternalStorage(getContext(), "cover", coverImg, new ImageAdapter.SaveImageCallback() {
+                                    @Override
+                                    public void onImageSaved(String filePath) {
+                                        // Cập nhật SQLite với đường dẫn file ảnh bìa
+                                        dbHelper.updateUserInfo(user.getUid(), "cover", filePath);
+                                        Log.d("ProfileFragment", "Cover image saved at: " + filePath);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e("ProfileFragment", "Error saving cover image: " + e.getMessage());
+                                    }
+                                });
+                            } else {
+                                Picasso.get().load(R.drawable.error_image).into(Coverimgv);
+                            }
+
+                            // Lưu dữ liệu vào SQLite
+                            dbHelper.insertOrUpdateUser(uid, name, email, phone, image, coverImg);
+                        }
+                    } finally {
+                        pd.dismiss(); // Đóng ProgressDialog dù có exception
                     }
-
-                    if (!TextUtils.isEmpty(coverImg)) {
-                        Picasso.get().load(coverImg).into(Coverimgv);
-                    } else {
-                        Picasso.get().load(R.drawable.error_image).into(Coverimgv);
-                    }
-
-                    // Lưu vào SQLite
-                    dbHelper.insertOrUpdateUser(name, email, phone, image, coverImg);
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Nếu Firebase lỗi, tải dữ liệu từ SQLite
-                Cursor cursor = dbHelper.getUserByEmail(user.getEmail());
-                if (cursor != null && cursor.moveToFirst()) {
-                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_NAME));
-                    @SuppressLint("Range") String email = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_EMAIL));
-                    @SuppressLint("Range") String phone = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_PHONE));
-                    @SuppressLint("Range") String image = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE));
-                    @SuppressLint("Range") String coverImg = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_COVER));
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    try {
+                        // Xử lý lỗi Firebase
+                        Log.e("FirebaseError", "Error fetching data from Firebase: " + error.getMessage());
+                        Toast.makeText(getActivity(), "Firebase Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
 
-                    tvName.setText(name);
-                    tvEmail.setText(email);
-                    tvPhone.setText(phone);
-
-                    if (!TextUtils.isEmpty(image)) {
-                        imgvAvatar.setImageURI(Uri.parse(image));
-                    }
-                    if (!TextUtils.isEmpty(coverImg)) {
-                        Coverimgv.setImageURI(Uri.parse(coverImg));
+                        // Nếu không có kết nối mạng, tải dữ liệu từ SQLite
+                        if (!isNetworkAvailable()) {
+                            loadFromSQLite();
+                        }
+                    } finally {
+                        pd.dismiss(); // Đóng ProgressDialog trong mọi trường hợp
                     }
                 }
-            }
-
-        });
+            });
+        } else {
+            // Nếu không có mạng, tải dữ liệu từ SQLite
+            loadFromSQLite();
+            pd.dismiss(); // Đóng ProgressDialog ngay lập tức vì không cần chờ
+        }
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -161,6 +211,74 @@ public class ProfileFragment extends Fragment {
 
         return view;
     }
+
+    private void loadPosts() {
+        postsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                postList.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Post post = dataSnapshot.getValue(Post.class);
+                    if (post.getUserId().equals(currentUser.getUid())) {
+                        postList.add(post);
+                    }
+                }
+                postAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Không thể tải bài viết.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Hàm kiểm tra kết nối mạng
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    // Hàm tải dữ liệu từ SQLite
+    private void loadFromSQLite() {
+        // Khi không có mạng và tải từ SQLite, hãy chắc chắn dừng ProgressDialog
+        pd.dismiss();
+
+        Cursor cursor = dbHelper.getUserByEmail(user.getEmail());
+        if (cursor != null && cursor.moveToFirst()) {
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_NAME));
+            @SuppressLint("Range") String email = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_EMAIL));
+            @SuppressLint("Range") String phone = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_PHONE));
+            @SuppressLint("Range") String image = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE));
+            @SuppressLint("Range") String coverImg = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_COVER));
+
+            tvName.setText(name);
+            tvEmail.setText(email);
+            tvPhone.setText(phone);
+
+            if (!TextUtils.isEmpty(image)) {
+                imgvAvatar.setImageURI(Uri.parse(image));
+            } else {
+                imgvAvatar.setImageResource(R.drawable.error_image);
+            }
+
+            if (!TextUtils.isEmpty(coverImg)) {
+                Coverimgv.setImageURI(Uri.parse(coverImg));
+            } else {
+                Coverimgv.setImageResource(R.drawable.error_image);
+            }
+        } else {
+            Log.w("SQLiteData", "No data found in SQLite for email: " + user.getEmail());
+            Toast.makeText(getContext(), "Không có dữ liệu cục bộ!", Toast.LENGTH_SHORT).show();
+        }
+
+        if (cursor != null) {
+            cursor.close();
+        }
+    }
+
     private void showEditProfileDialogue() {
         // Các tùy chọn
         String[] options = {"Chỉnh sửa ảnh đại diện", "Chỉnh sửa ảnh bìa", "Chỉnh sửa tên", "Chỉnh sửa số điện thoại"};
@@ -286,38 +404,44 @@ public class ProfileFragment extends Fragment {
 
         // Tạo dữ liệu để cập nhật vào Firebase Realtime Database
         HashMap<String, Object> updates = new HashMap<>();
-        updates.put(profileOrCoverPhoto, imageUrl);
+        updates.put(profileOrCoverPhoto, imageUrl); // Chọn "image" hoặc "cover" tùy thuộc vào ảnh đại diện hay ảnh bìa
 
         // Lấy User id từ Firebase User
         String uid = user.getUid();
 
-        // Lấy thông tin người dùng hiện tại từ Firebase để không bị ghi đè
+        // Lấy thông tin người dùng hiện tại từ Firebase
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    ModelUser currentUser = dataSnapshot.getValue(ModelUser.class);
-                    if (currentUser != null) {
-                        // Cập nhật ảnh vào Firebase chỉ thay đổi thông tin ảnh mà không làm mất dữ liệu cũ
-                        userRef.updateChildren(updates)
-                                .addOnSuccessListener(unused -> {
-                                    // Cập nhật SQLite
-                                    SQLiteHelper dbHelper = new SQLiteHelper(getContext());
-                                    if ("image".equals(profileOrCoverPhoto)) {
-                                        dbHelper.insertOrUpdateUser(currentUser.getName(), currentUser.getEmail(), currentUser.getPassword(), imageUrl, null);
-                                    } else if ("cover".equals(profileOrCoverPhoto)) {
-                                        dbHelper.insertOrUpdateUser(currentUser.getName(), currentUser.getEmail(), currentUser.getPassword(), null, imageUrl);
+                    // Cập nhật ảnh vào Firebase
+                    userRef.updateChildren(updates)
+                            .addOnSuccessListener(unused -> {
+                                pd.dismiss();
+                                // Lưu ảnh vào bộ nhớ trong và cập nhật vào SQLite
+                                ImageAdapter.saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl, new ImageAdapter.SaveImageCallback() {
+                                    @Override
+                                    public void onImageSaved(String filePath) {
+                                        // Thêm logic nếu cần
+                                        dbHelper.updateUserInfo(uid, profileOrCoverPhoto, filePath);
+                                        Log.d("ProfileFragment", "Image saved at: " + filePath);
                                     }
 
-                                    pd.dismiss();
-                                    Toast.makeText(getActivity(), "Đã cập nhật ảnh thành công!", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> {
-                                    pd.dismiss();
-                                    Toast.makeText(getActivity(), "Lỗi cập nhật ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e("ProfileFragment", "Error saving image: " + e.getMessage());
+                                    }
                                 });
-                    }
+
+                                // Cập nhật vào SQLite sau khi cập nhật Firebase thành công
+                                dbHelper.updateUserInfo(uid, profileOrCoverPhoto, imageUrl);
+                                Toast.makeText(getActivity(), "Đã cập nhật ảnh thành công", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                pd.dismiss();
+                                Toast.makeText(getActivity(), "Lỗi cập nhật ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 }
             }
 

@@ -1,6 +1,7 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,9 @@ public class HomeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 postList.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+
                     Post post = dataSnapshot.getValue(Post.class);
+
                     if (post != null) {
                         postList.add(post);
                     }
