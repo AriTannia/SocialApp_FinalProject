@@ -70,7 +70,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             }
 
             // Load poster information (name and avatar) from Firebase
-            fetchPosterInfo(post.getPosterUid(), holder);
+            fetchPosterInfo(post.getuserId(), holder);
 
             // Set up button listeners for like, comment, save actions
             holder.likeButton.setOnClickListener(v -> {

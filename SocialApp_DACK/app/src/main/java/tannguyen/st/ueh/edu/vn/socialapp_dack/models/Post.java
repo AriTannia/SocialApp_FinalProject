@@ -6,19 +6,19 @@ public class Post {
     private String content;     // Nội dung bài viết
     private long timestamp;     // Dấu thời gian của bài viết
     private String imageUrl;    // Đường dẫn đến hình ảnh của bài viết
-    private String posterUid;   // UID của người đăng bài
+    private String userId;   // UID của người đăng bài
 
     // Constructor mặc định (cần thiết cho Firebase)
     public Post() {}
 
     // Constructor đầy đủ để tạo một bài viết mới
-    public Post(String id, String title, String content, long timestamp, String imageUrl, String posterUid) {
+    public Post(String id, String title, String content, long timestamp, String imageUrl, String userId) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.timestamp = timestamp;
         this.imageUrl = imageUrl;
-        this.posterUid = posterUid;
+        this.userId = userId;
     }
 
     // Getters và Setters
@@ -37,6 +37,6 @@ public class Post {
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getPosterUid() { return posterUid; }
-    public void setPosterUid(String posterUid) { this.posterUid = posterUid; }
+    public String getuserId() { return userId; }
+    public void setuserId(String userId) { this.userId = userId; }
 }

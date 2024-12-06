@@ -50,8 +50,8 @@ public class PostActivity extends AppCompatActivity {
         // Kiểm tra xem người dùng đã đăng nhập chưa
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            String posterUid = currentUser.getUid();
-            loadUserInfo(posterUid); // Tải thông tin người dùng
+            String userId = currentUser.getUid();
+            loadUserInfo(userId); // Tải thông tin người dùng
         } else {
             Toast.makeText(this, "Bạn cần đăng nhập để đăng bài.", Toast.LENGTH_SHORT).show();
             finish();
@@ -106,13 +106,13 @@ public class PostActivity extends AppCompatActivity {
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            String posterUid = currentUser.getUid();
+            String userId = currentUser.getUid();
 
             String id = UUID.randomUUID().toString();
             long timestamp = System.currentTimeMillis();
 
             // Tạo bài viết mới
-            Post post = new Post(id, title, content, timestamp, imageUrl, posterUid);
+            Post post = new Post(id, title, content, timestamp, imageUrl, userId);
 
             // Lưu bài viết vào SQLite (nếu cần)
             databaseHelper.addPost(post);

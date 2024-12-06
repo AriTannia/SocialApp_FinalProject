@@ -28,7 +28,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_CONTENT = "content";
     private static final String COLUMN_TIMESTAMP = "timestamp";
     private static final String COLUMN_IMAGE_URL = "imageUrl";
-    private static final String COLUMN_POSTER_UID = "posterUid"; // Thay thế posterName và posterAvatar
+    private static final String COLUMN_POSTER_UID = "userId"; // Thay thế posterName và posterAvatar
 
     public SQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -96,7 +96,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         values.put(COLUMN_CONTENT, post.getContent());
         values.put(COLUMN_TIMESTAMP, post.getTimestamp());
         values.put(COLUMN_IMAGE_URL, post.getImageUrl());
-        values.put(COLUMN_POSTER_UID, post.getPosterUid()); // Lưu UID thay vì posterName và posterAvatar
+        values.put(COLUMN_POSTER_UID, post.getuserId()); // Lưu UID thay vì posterName và posterAvatar
 
         db.insert(TABLE_POSTS, null, values);
         db.close();
