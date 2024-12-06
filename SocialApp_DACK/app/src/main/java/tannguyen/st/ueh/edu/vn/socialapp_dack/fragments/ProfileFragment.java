@@ -106,58 +106,65 @@ public class ProfileFragment extends Fragment {
                             String image = "" + ds.child("image").getValue();
                             String coverImg = "" + ds.child("cover").getValue();
 
-                            // Hiển thị dữ liệu lên giao diện
+                            // Hiển thị thông tin lên giao diện
                             tvName.setText(name);
                             tvEmail.setText(email);
                             tvPhone.setText(phone);
 
                             if (!TextUtils.isEmpty(image)) {
                                 Picasso.get().load(image).into(imgvAvatar);
-
-                                ImageAdapter.saveImageToInternalStorage(getContext(), "image", image, new ImageAdapter.SaveImageCallback() {
+                                // Lưu ảnh đại diện vào bộ nhớ trong
+                                ImageAdapter.saveImageToInternalStorage(getContext(), uid, "image", image, new ImageAdapter.SaveImageCallback() {
                                     @Override
                                     public void onImageSaved(String filePath) {
-                                        // Cập nhật SQLite với đường dẫn file
-                                        dbHelper.updateUserInfo(user.getUid(), "image", filePath);
+                                        dbHelper.updateUserInfo(uid, "image", filePath);
                                         Log.d("ProfileFragment", "Profile image saved at: " + filePath);
+
+                                        // Cập nhật giao diện ảnh
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(filePath).into(imgvAvatar));
                                     }
 
                                     @Override
                                     public void onError(Exception e) {
-                                        Log.e("ProfileFragment", "Error saving profile image: " + e.getMessage());
+                                        Log.e("ProfileFragment", "Error saving profile image: ", e);
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(R.drawable.error_image).into(imgvAvatar));
                                     }
                                 });
                             } else {
-                                Picasso.get().load(R.drawable.error_image).into(imgvAvatar);
+                                requireActivity().runOnUiThread(() -> Picasso.get().load(R.drawable.error_image).into(imgvAvatar));
                             }
 
                             if (!TextUtils.isEmpty(coverImg)) {
                                 Picasso.get().load(coverImg).into(Coverimgv);
-
-                                ImageAdapter.saveImageToInternalStorage(getContext(), "cover", coverImg, new ImageAdapter.SaveImageCallback() {
+                                // Lưu ảnh bìa vào bộ nhớ trong
+                                ImageAdapter.saveImageToInternalStorage(getContext(), uid, "cover", coverImg, new ImageAdapter.SaveImageCallback() {
                                     @Override
                                     public void onImageSaved(String filePath) {
-                                        // Cập nhật SQLite với đường dẫn file ảnh bìa
-                                        dbHelper.updateUserInfo(user.getUid(), "cover", filePath);
+                                        dbHelper.updateUserInfo(uid, "cover", filePath);
                                         Log.d("ProfileFragment", "Cover image saved at: " + filePath);
+
+                                        // Cập nhật giao diện ảnh bìa
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(filePath).into(Coverimgv));
                                     }
 
                                     @Override
                                     public void onError(Exception e) {
-                                        Log.e("ProfileFragment", "Error saving cover image: " + e.getMessage());
+                                        Log.e("ProfileFragment", "Error saving cover image: ", e);
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(R.drawable.error_image).into(Coverimgv));
                                     }
                                 });
                             } else {
-                                Picasso.get().load(R.drawable.error_image).into(Coverimgv);
+                                requireActivity().runOnUiThread(() -> Picasso.get().load(R.drawable.error_image).into(Coverimgv));
                             }
 
-                            // Lưu dữ liệu vào SQLite
+                            // Lưu thông tin SQLite
                             dbHelper.insertOrUpdateUser(uid, name, email, phone, image, coverImg);
                         }
                     } finally {
                         pd.dismiss(); // Đóng ProgressDialog dù có exception
                     }
                 }
+
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
@@ -383,31 +390,37 @@ public class ProfileFragment extends Fragment {
                     userRef.updateChildren(updates)
                             .addOnSuccessListener(unused -> {
                                 pd.dismiss();
-                                // Lưu ảnh vào bộ nhớ trong và cập nhật vào SQLite
-                                saveImageToInternalStorage(getContext(), profileOrCoverPhoto, imageUrl, new ImageAdapter.SaveImageCallback() {
+                                // Lưu ảnh vào bộ nhớ trong và cập nhật SQLite
+                                ImageAdapter.saveImageToInternalStorage(getContext(), uid, profileOrCoverPhoto, imageUrl, new ImageAdapter.SaveImageCallback() {
                                     @Override
                                     public void onImageSaved(String filePath) {
-                                        // Thêm logic nếu cần
                                         dbHelper.updateUserInfo(uid, profileOrCoverPhoto, filePath);
                                         Log.d("ProfileFragment", "Image saved at: " + filePath);
+
+                                        requireActivity().runOnUiThread(() -> {
+                                            Toast.makeText(getActivity(), "Đã cập nhật ảnh thành công", Toast.LENGTH_SHORT).show();
+                                        });
                                     }
 
                                     @Override
                                     public void onError(Exception e) {
-                                        Log.e("ProfileFragment", "Error saving image: " + e.getMessage());
+                                        Log.e("ProfileFragment", "Error saving image: ", e);
+
+                                        requireActivity().runOnUiThread(() -> {
+                                            Toast.makeText(getActivity(), "Lỗi lưu ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        });
                                     }
                                 });
-
-                                // Cập nhật vào SQLite sau khi cập nhật Firebase thành công
-                                dbHelper.updateUserInfo(uid, profileOrCoverPhoto, imageUrl);
-                                Toast.makeText(getActivity(), "Đã cập nhật ảnh thành công", Toast.LENGTH_SHORT).show();
                             })
                             .addOnFailureListener(e -> {
                                 pd.dismiss();
-                                Toast.makeText(getActivity(), "Lỗi cập nhật ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                requireActivity().runOnUiThread(() -> {
+                                    Toast.makeText(getActivity(), "Lỗi cập nhật ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
                             });
                 }
             }
+
 
             @Override
             public void onCancelled(DatabaseError databaseError) {

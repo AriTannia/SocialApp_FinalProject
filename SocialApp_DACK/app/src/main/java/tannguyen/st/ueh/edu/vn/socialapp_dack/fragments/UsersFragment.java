@@ -1,5 +1,10 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.fragments;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -7,10 +12,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,6 +32,8 @@ import java.util.List;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterUsers;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.ImageAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class UsersFragment extends Fragment {
@@ -32,16 +41,15 @@ public class UsersFragment extends Fragment {
     private RecyclerView recyclerView;
     private AdapterUsers adapterUsers;
     private List<ModelUser> userList;
+    private SQLiteHelper dbHelper;
     private ValueEventListener listener;
 
     public UsersFragment() {
         // Required empty public constructor
     }
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_users, container, false);
 
@@ -50,27 +58,67 @@ public class UsersFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         userList = new ArrayList<>();
+        dbHelper = new SQLiteHelper(requireContext()); // Khởi tạo SQLiteHelper
 
-        getAllUsers();
+        // Kiểm tra mạng và tải dữ liệu
+        if (isNetworkAvailable()) {
+            getAllUsersFromFirebase(); // Tải dữ liệu từ Firebase nếu có mạng
+        } else {
+            loadUsersFromSQLite(); // Tải dữ liệu từ SQLite nếu không có mạng
+        }
+
         return view;
     }
 
-    private void getAllUsers() {
+    private void getAllUsersFromFirebase() {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userList.clear(); // Xóa danh sách cũ trước khi tải lại
+                userList.clear();
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    ModelUser user = ds.getValue(ModelUser.class); // Ánh xạ dữ liệu từ Firebase sang lớp User
+                    ModelUser user = ds.getValue(ModelUser.class);
 
-                    if (user != null && fUser != null) {
-                        // Kiểm tra xem người dùng hiện tại có khớp với user trong danh sách không
-                        if (!user.getUid().equals(fUser.getUid())) {
-                            userList.add(user);
+                    if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
+                        String imageUrl = user.getImage();
+                        String coverUrl = user.getCoverIv();
+
+                        // Lưu ảnh profile
+                        if (!TextUtils.isEmpty(imageUrl)) {
+                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", imageUrl, new ImageAdapter.SaveImageCallback() {
+                                @Override
+                                public void onImageSaved(String filePath) {
+                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), filePath, user.getCoverIv());
+                                    Log.d("Firebase-SQLite", "Saved profile image path to SQLite: " + filePath);
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    Log.e("Firebase-SQLite", "Error saving profile image: ", e);
+                                }
+                            });
                         }
+
+                        // Lưu ảnh bìa
+                        if (!TextUtils.isEmpty(coverUrl)) {
+                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "cover", coverUrl, new ImageAdapter.SaveImageCallback() {
+                                @Override
+                                public void onImageSaved(String filePath) {
+                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), user.getImage(), filePath);
+                                    Log.d("Firebase-SQLite", "Saved cover image path to SQLite: " + filePath);
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    Log.e("Firebase-SQLite", "Error saving cover image: ", e);
+                                }
+                            });
+                        }
+
+                        userList.add(user);
                     }
                 }
 
@@ -79,10 +127,46 @@ public class UsersFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Ghi log hoặc hiển thị lỗi nếu có
                 Log.e("FirebaseError", "Lỗi: " + error.getMessage());
+                Toast.makeText(getActivity(), "Lỗi Firebase: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                loadUsersFromSQLite();
             }
         });
+    }
+
+    private void loadUsersFromSQLite() {
+        userList.clear();
+        Cursor cursor = dbHelper.getAllUsers();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                @SuppressLint("Range") String uid = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_UID));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_NAME));
+                @SuppressLint("Range") String email = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_EMAIL));
+                @SuppressLint("Range") String phone = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_PHONE));
+                @SuppressLint("Range") String imagePath = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE));
+                @SuppressLint("Range") String coverPath = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_COVER));
+
+                ModelUser user = new ModelUser(uid, name, null, email, phone, imagePath, coverPath);
+                userList.add(user);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        updateAdapter();
+    }
+
+    private boolean isNetworkAvailable() {
+        if (getActivity() == null) return false;
+
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connectivityManager == null) return false;
+
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     public void searchUsers(String query) {
@@ -133,5 +217,4 @@ public class UsersFragment extends Fragment {
             adapterUsers.notifyDataSetChanged(); // Cập nhật dữ liệu
         }
     }
-
 }
