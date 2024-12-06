@@ -32,6 +32,7 @@ public class UsersFragment extends Fragment {
     private RecyclerView recyclerView;
     private AdapterUsers adapterUsers;
     private List<ModelUser> userList;
+    private ValueEventListener listener;
 
     public UsersFragment() {
         // Required empty public constructor
@@ -87,8 +88,13 @@ public class UsersFragment extends Fragment {
     public void searchUsers(String query) {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+        // Xóa listener cũ trước khi thêm mới
+        if (listener != null) {
+            ref.removeEventListener(listener);
+        }
 
-        ref.addValueEventListener(new ValueEventListener() {
+        // Tạo mới listener
+        listener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 userList.clear(); // Xóa danh sách cũ
@@ -103,7 +109,7 @@ public class UsersFragment extends Fragment {
                         }
                     }
                 }
-
+                // Cập nhật adapter
                 updateAdapter();
             }
 
@@ -111,11 +117,15 @@ public class UsersFragment extends Fragment {
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("FirebaseError", "Lỗi: " + error.getMessage());
             }
-        });
+        };
+
+        // Thêm listener mới
+        ref.addValueEventListener(listener);
     }
 
     private void updateAdapter() {
         // Kiểm tra null trước khi gán adapter
+        Log.d("LÀO GÌ CŨNG TÔN", String.valueOf(adapterUsers));
         if (adapterUsers == null) {
             adapterUsers = new AdapterUsers(getActivity(), userList);
             recyclerView.setAdapter(adapterUsers); // Gắn adapter vào RecyclerView

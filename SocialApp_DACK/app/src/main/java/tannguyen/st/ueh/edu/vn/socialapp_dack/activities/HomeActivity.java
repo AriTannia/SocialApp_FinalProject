@@ -3,6 +3,7 @@ package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -59,7 +60,7 @@ public class HomeActivity extends AppCompatActivity {
         // Set up insets for edge-to-edge display
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.Home_main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, systemBars.top, 0, 0);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
             return insets;
         });
 
@@ -172,13 +173,25 @@ public class HomeActivity extends AppCompatActivity {
         MenuItem item = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
 
+        searchView.setOnSearchClickListener(v -> {
+            // Cập nhật trạng thái Bottom Navigation
+            bottomNavigationView.setSelectedItemId(R.id.action_other_users);
+
+            // Kiểm tra xem fragment hiện tại có phải là UsersFragment không
+//            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+//            if (!(currentFragment instanceof UsersFragment)) {
+//                // Nếu không phải, chuyển sang UsersFragment
+//                updateFragmentSearch(""); // Mở với query rỗng
+//            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!TextUtils.isEmpty(query.trim())) {
-                    openUsersFragment(query); // Search with query
+                    updateFragmentSearch(query); // Gọi phương thức cập nhật danh sách
                 } else {
-                    openUsersFragment(""); // If query is empty, show all users
+                    updateFragmentSearch(""); // Hiển thị tất cả nếu không nhập gì
                 }
                 return false;
             }
@@ -186,9 +199,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (!TextUtils.isEmpty(newText.trim())) {
-                    openUsersFragment(newText); // Update search results as user types
+                    updateFragmentSearch(newText); // Gọi phương thức cập nhật danh sách khi nhập
                 } else {
-                    openUsersFragment(""); // If query is empty, show all users
+                    updateFragmentSearch(""); // Hiển thị tất cả nếu không nhập gì
                 }
                 return false;
             }
@@ -197,13 +210,21 @@ public class HomeActivity extends AppCompatActivity {
         return true;
     }
 
-    private void openUsersFragment(String query) {
-        UsersFragment fragment = new UsersFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+    private void updateFragmentSearch(String query) {
+        // Tìm fragment hiện tại
+        UsersFragment fragment = (UsersFragment) getSupportFragmentManager().findFragmentByTag("USERS_FRAGMENT");
+
+        if (fragment == null) {
+            // Nếu fragment chưa tồn tại, tạo mới
+            fragment = new UsersFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment, "USERS_FRAGMENT")
+                    .addToBackStack(null)
+                    .commit();
+        }
+
+        // Gọi phương thức searchUsers trong fragment
         fragment.searchUsers(query);
     }
 }
