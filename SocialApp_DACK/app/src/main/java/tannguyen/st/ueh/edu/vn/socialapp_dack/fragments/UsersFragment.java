@@ -3,6 +3,7 @@ package tannguyen.st.ueh.edu.vn.socialapp_dack.fragments;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -134,9 +135,15 @@ public class UsersFragment extends Fragment {
     }
 
     private void loadUsersFromSQLite() {
+        Log.d("DataLoad", "Loading users from SQLite...");
         userList.clear();
-        Cursor cursor = dbHelper.getAllUsers();
 
+        // Lấy UID của tài khoản đang đăng nhập
+        String currentUserUid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+
+        Cursor cursor = dbHelper.getAllUsers();
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 @SuppressLint("Range") String uid = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_UID));
@@ -146,13 +153,21 @@ public class UsersFragment extends Fragment {
                 @SuppressLint("Range") String imagePath = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE));
                 @SuppressLint("Range") String coverPath = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_COVER));
 
-                ModelUser user = new ModelUser(uid, name, null, email, phone, imagePath, coverPath);
+                // Kiểm tra nếu tài khoản đang đăng nhập không được hiển thị
+                if (currentUserUid != null && currentUserUid.equals(uid)) {
+                    continue; // Bỏ qua tài khoản đang đăng nhập
+                }
+
+                // Tạo ModelUser và thêm vào danh sách
+                ModelUser user = new ModelUser(name, email, null, phone, imagePath, uid, coverPath);
                 userList.add(user);
             } while (cursor.moveToNext());
 
+            Log.d("SQLiteData", "Loaded " + userList.size() + " users from SQLite.");
             cursor.close();
         }
 
+        // Cập nhật adapter sau khi lọc dữ liệu
         updateAdapter();
     }
 
