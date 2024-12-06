@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -43,8 +44,9 @@ public class HomeFragment extends Fragment {
 
         // Initialize post list and adapter
         postList = new ArrayList<>();
-
-        postAdapter = new PostAdapter(getContext(), postList);
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = (currentUser != null) ? currentUser.getUid() : null;
+        postAdapter = new PostAdapter(getContext(), postList,userId);
         recyclerView.setAdapter(postAdapter);
 
         // Firebase reference

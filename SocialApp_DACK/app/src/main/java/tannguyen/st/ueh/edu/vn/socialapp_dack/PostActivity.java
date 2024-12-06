@@ -59,6 +59,8 @@ public class PostActivity extends AppCompatActivity {
 
         // Xử lý khi người dùng nhấn nút đăng bài
         findViewById(R.id.buttonPost).setOnClickListener(v -> createPost());
+        // Lấy thông tin bài đăng
+        String postId = getIntent().getStringExtra("postId");
 
     }
 
@@ -74,6 +76,7 @@ public class PostActivity extends AppCompatActivity {
 
         // Lấy người dùng đã đăng nhập
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = currentUser != null ? currentUser.getUid() : null;
         if (currentUser != null) {
             String posterName = currentUser.getDisplayName();
             if (posterName == null || posterName.isEmpty()) {
@@ -85,7 +88,7 @@ public class PostActivity extends AppCompatActivity {
             long timestamp = System.currentTimeMillis();
 
             // Tạo đối tượng Post
-            Post post = new Post(id, title, content, timestamp, posterName);
+            Post post = new Post(id, title, content, timestamp,userId, posterName);
 
             // Lưu bài viết vào SQLite
             databaseHelper.addPost(post);

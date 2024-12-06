@@ -46,7 +46,7 @@ public class CommentActivity extends AppCompatActivity {
         findViewById(R.id.buttonSendComment).setOnClickListener(this::postComment);
 
         // Lấy ID bài viết hiện tại từ Intent
-        currentPostId = getIntent().getStringExtra("POST_ID");
+        currentPostId = getIntent().getStringExtra("postId");
         if (currentPostId == null) {
             // Nếu không có POST_ID, thông báo và đóng Activity
             Toast.makeText(this, "Post ID is missing!", Toast.LENGTH_SHORT).show();

@@ -26,6 +26,9 @@
             android:name=".EditPostActivity"
             android:exported="false" />
         <activity
+            android:name=".EditPostActivity"
+            android:exported="false" />
+        <activity
             android:name=".PostDetailActivity"
             android:exported="false" />
         <activity

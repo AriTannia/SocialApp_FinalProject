@@ -4,90 +4,107 @@
     android:layout_margin="8dp"
     android:elevation="4dp"
     android:radius="8dp">
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/postPosterName"
+    <!-- Thay LinearLayout bằng RelativeLayout -->
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorAccent"
-        android:text="Posted by: Username" />
-    <TextView
-        android:id="@+id/postTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Title" />
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/postContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Content" />
+        <TextView
+            android:id="@+id/postPosterName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorAccent"
+            android:text="Posted by: Username" />
 
-    <TextView
-        android:id="@+id/postTimestamp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Timestamp" />
+        <TextView
+            android:id="@+id/postTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:layout_below="@id/postPosterName"
+            android:layout_marginTop="8dp"/>
 
+        <TextView
+            android:id="@+id/postContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Content"
+            android:layout_below="@id/postTitle"
+            android:layout_marginTop="8dp"/>
 
+        <TextView
+            android:id="@+id/postTimestamp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Timestamp"
+            android:layout_below="@id/postContent"
+            android:layout_marginTop="8dp"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        <!-- Các nút Like, Comment, Save -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@id/postTimestamp"
+            android:layout_marginTop="8dp">
 
-        <ImageButton
-            android:id="@+id/buttonLike"
+            <ImageButton
+                android:id="@+id/buttonLike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_like"
+                android:contentDescription="Like Button" />
+
+            <ImageButton
+                android:id="@+id/buttonComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_comment"
+                android:contentDescription="Comment Button"
+                android:layout_marginStart="16dp" />
+
+            <ImageButton
+                android:id="@+id/buttonSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_savee_black"
+                android:contentDescription="Save Button"
+                android:layout_marginStart="16dp" />
+        </LinearLayout>
+
+        <!-- Nút Sửa và Xóa ở góc trên bên phải -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_like"
-            android:contentDescription="Like Button" />
+            android:orientation="horizontal"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp">
 
-        <ImageButton
-            android:id="@+id/buttonComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_comment"
-            android:contentDescription="Comment Button"
-            android:layout_marginStart="16dp" />
+            <ImageButton
+                android:id="@+id/buttonEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_edit"
+                android:contentDescription="Edit Button"
+                android:layout_marginEnd="16dp"
+                android:visibility="gone"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"/>
 
-        <ImageButton
-            android:id="@+id/buttonSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_savee_black"
-            android:contentDescription="Save Button"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:paddingTop="8dp">-->
+            <ImageButton
+                android:id="@+id/buttonDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_delete"
+                android:contentDescription="Delete Button"
+                android:visibility="gone"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"/>
+        </LinearLayout>
 
-<!--        <Button-->
-<!--            android:id="@+id/buttonEditPost"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Edit"-->
-<!--            android:visibility="gone"-->
-<!--            android:background="@color/colorAccent"-->
-<!--            android:textColor="#FFFFFF" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/buttonDeletePost"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Delete"-->
-<!--            android:visibility="gone"-->
-<!--            android:layout_marginStart="8dp"-->
-<!--            android:background="@color/colorRed"-->
-<!--            android:textColor="#FFFFFF" />-->
-<!--    </LinearLayout>-->
-</LinearLayout>
+    </RelativeLayout>
 </androidx.cardview.widget.CardView>
