@@ -112,22 +112,23 @@ public class ProfileFragment extends Fragment {
                             tvPhone.setText(phone);
 
                             if (!TextUtils.isEmpty(image)) {
-                                Picasso.get().load(image).into(imgvAvatar);
                                 // Lưu ảnh đại diện vào bộ nhớ trong
                                 ImageAdapter.saveImageToInternalStorage(getContext(), uid, "image", image, new ImageAdapter.SaveImageCallback() {
                                     @Override
                                     public void onImageSaved(String filePath) {
                                         dbHelper.updateUserInfo(uid, "image", filePath);
                                         Log.d("ProfileFragment", "Profile image saved at: " + filePath);
+                                        Log.d("Picasso", "Image loaded successfully");
 
                                         // Cập nhật giao diện ảnh
-                                        requireActivity().runOnUiThread(() -> Picasso.get().load(filePath).into(imgvAvatar));
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(image).into(imgvAvatar));
                                     }
 
                                     @Override
                                     public void onError(Exception e) {
                                         Log.e("ProfileFragment", "Error saving profile image: ", e);
                                         requireActivity().runOnUiThread(() -> Picasso.get().load(R.drawable.error_image).into(imgvAvatar));
+                                        Log.e("Picasso", "Error loading image: " + e.getMessage());
                                     }
                                 });
                             } else {
@@ -135,7 +136,6 @@ public class ProfileFragment extends Fragment {
                             }
 
                             if (!TextUtils.isEmpty(coverImg)) {
-                                Picasso.get().load(coverImg).into(Coverimgv);
                                 // Lưu ảnh bìa vào bộ nhớ trong
                                 ImageAdapter.saveImageToInternalStorage(getContext(), uid, "cover", coverImg, new ImageAdapter.SaveImageCallback() {
                                     @Override
@@ -144,7 +144,7 @@ public class ProfileFragment extends Fragment {
                                         Log.d("ProfileFragment", "Cover image saved at: " + filePath);
 
                                         // Cập nhật giao diện ảnh bìa
-                                        requireActivity().runOnUiThread(() -> Picasso.get().load(filePath).into(Coverimgv));
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(coverImg).into(Coverimgv));
                                     }
 
                                     @Override
