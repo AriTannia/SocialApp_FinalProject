@@ -113,6 +113,8 @@ public class HomeActivity extends AppCompatActivity {
 
         // Load posts from Firebase
         loadPosts();
+        Fragment defaultFragment = new HomeFragment();
+        replaceFragment(defaultFragment);
     }
 
     // Method to replace the fragment

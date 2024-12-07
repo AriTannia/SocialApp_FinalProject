@@ -10,6 +10,14 @@
     <string name="save_button">Lưu bài viết</string>
     <string name="comment_button">Bình luận bài viết</string>
     <string name="like_button">Thích bài viết</string>
-
+    <string name="user_avatar">User Avatar</string>
+    <string name="username_placeholder">User Name</string>
+    <string name="comment_placeholder">Comment content here</string>
+    <string name="edit_comment_hint">Edit your comment</string>
+    <string name="timestamp_placeholder">Timestamp</string>
+    <string name="delete_comment">Delete Comment</string>
+    <string name="edit">Edit</string>
+    <string name="save">Save</string>
+    <string name="edit_hint">Demo edit</string>
 
 </resources>

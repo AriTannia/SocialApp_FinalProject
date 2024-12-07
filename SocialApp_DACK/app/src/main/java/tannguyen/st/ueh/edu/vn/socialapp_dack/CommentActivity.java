@@ -1,5 +1,6 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -59,14 +60,64 @@ public class CommentActivity extends AppCompatActivity {
 
         // Khởi tạo adapter và danh sách bình luận
         commentList = new ArrayList<>();
-        adapter = new CommentAdapter(this, commentList, FirebaseAuth.getInstance().getUid(), this::deleteComment);
+        adapter = new CommentAdapter(
+                this,
+                commentList,
+                FirebaseAuth.getInstance().getUid(),
+                new CommentAdapter.OnCommentInteractionListener() {
+                    @Override
+                    public void onDeleteComment(Comment comment) {
+                        deleteComment(comment);
+                    }
+
+                    @Override
+                    public void onEditComment(Comment comment) {
+                        editComment(comment);
+                    }
+                }
+        );
         recyclerViewComments.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewComments.setAdapter(adapter);
 
         // Lấy danh sách bình luận từ Firebase
         loadComments();
     }
+    private void editComment(Comment comment) {
+        // Hiển thị hộp thoại để chỉnh sửa bình luận
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Edit Comment");
 
+        // Tạo EditText để nhập nội dung mới
+        final EditText input = new EditText(this);
+        input.setText(comment.getContent()); // Hiển thị nội dung hiện tại
+        input.setSelection(input.getText().length()); // Đặt con trỏ ở cuối văn bản
+        builder.setView(input);
+
+        // Nút "Lưu"
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String newContent = input.getText().toString().trim();
+            if (TextUtils.isEmpty(newContent)) {
+                Toast.makeText(this, "Comment cannot be empty!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Cập nhật nội dung bình luận trong Firebase
+            commentsRef.child(comment.getId()).child("content").setValue(newContent)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Comment updated", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Failed to update comment", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
+
+        // Nút "Hủy"
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        // Hiển thị hộp thoại
+        builder.show();
+    }
     private void postComment(View view) {
         // Lấy nội dung bình luận
         String content = editTextComment.getText().toString();

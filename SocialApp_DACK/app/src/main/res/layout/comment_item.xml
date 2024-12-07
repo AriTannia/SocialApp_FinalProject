@@ -4,18 +4,15 @@
     android:orientation="horizontal"
     android:padding="10dp">
 
-    <!-- Avatar người dùng bình luận -->
     <ImageView
         android:id="@+id/commentUserAvatar"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginEnd="10dp"
-        android:src="@drawable/error_image"
-        android:contentDescription="User Avatar"
         android:scaleType="centerCrop"
+        android:contentDescription="@string/user_avatar"
         android:background="@drawable/circle_background" />
 
-    <!-- Nội dung bình luận -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -26,7 +23,6 @@
             android:id="@+id/commentUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User Name"
             android:textStyle="bold"
             android:textSize="14sp" />
 
@@ -34,65 +30,31 @@
             android:id="@+id/commentContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Comment content here"
             android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end" />
+
+        <EditText
+            android:id="@+id/editTextEditComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/edit_hint"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/commentTimestamp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Timestamp"
             android:textSize="12sp"
             android:textColor="#999999" />
     </LinearLayout>
 
-    <!-- Nút xóa và chỉnh sửa -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center">
-
-        <ImageButton
-            android:id="@+id/buttonDeleteComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_delete"
-            android:visibility="gone"
-            android:contentDescription="Delete Comment"
-            android:background="?android:attr/selectableItemBackground" />
-
-        <Button
-            android:id="@+id/buttonEditComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/design_default_color_primary"
-            android:text="Edit"
-            android:textColor="#FFFFFF" />
-
-        <Button
-            android:id="@+id/buttonSaveComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            android:visibility="gone"
-            android:layout_marginStart="8dp"
-            android:background="@color/colorAccent"
-            android:textColor="#FFFFFF" />
-
-        <EditText
-            android:id="@+id/editTextEditComment"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Write a comment..."
-            android:background="@drawable/edit_text_background"
-            android:padding="12dp"
-            android:textSize="14sp"
-            android:visibility="gone"/> <!-- Đảm bảo có thuộc tính visibility phù hợp -->
-
-    </LinearLayout>
-
+    <!-- Menu ba chấm dọc -->
+    <ImageButton
+        android:id="@+id/buttonOptionsMenu"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_more_vert"
+        android:contentDescription="Comment Options"
+        android:background="?android:attr/selectableItemBackground" />
 </LinearLayout>
