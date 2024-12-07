@@ -4,10 +4,12 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,6 +37,7 @@ public class CommentActivity extends AppCompatActivity {
     private DatabaseReference commentsRef;
     private String currentPostId;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +47,10 @@ public class CommentActivity extends AppCompatActivity {
         recyclerViewComments = findViewById(R.id.recyclerViewComments);
         editTextComment = findViewById(R.id.editTextComment);
         findViewById(R.id.buttonSendComment).setOnClickListener(this::postComment);
+
+        // Xử lý nút quay lại (ic_back)
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> onBackPressed());  // Hoặc dùng finish()
 
         // Lấy ID bài viết hiện tại từ Intent
         currentPostId = getIntent().getStringExtra("POST_ID");
@@ -133,4 +140,12 @@ public class CommentActivity extends AppCompatActivity {
             }
         });
     }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();  // Đóng CommentActivity và quay lại màn hình trước đó
+        // Nếu muốn mở lại HomeActivity, thay vì chỉ quay lại màn hình trước:
+        // startActivity(new Intent(this, HomeActivity.class));
+        // finish();  // Đảm bảo rằng CommentActivity sẽ bị hủy khi quay lại HomeActivity.
+    }
+
 }

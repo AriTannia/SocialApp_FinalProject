@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#FFFFFF"
     android:padding="8dp">
@@ -19,8 +20,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_back"
-            android:contentDescription="Back"
-            android:tint="#000000" />
+            android:contentDescription="Back" />
 
         <!-- Tiêu đề -->
         <TextView
@@ -51,17 +51,6 @@
         android:gravity="center_vertical"
         android:padding="8dp"
         android:background="#F0F0F0">
-
-        <!-- Ảnh đại diện -->
-        <ImageView
-            android:id="@+id/userAvatarImageView"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/error_image"
-            android:contentDescription="User Avatar"
-            android:scaleType="centerCrop"
-            android:background="@drawable/circle_background" />
 
         <!-- Ô nhập nội dung bình luận -->
         <EditText

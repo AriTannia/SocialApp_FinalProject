@@ -4,18 +4,16 @@ public class Comment {
     private String id;
     private String postId; // ID bài đăng mà bình luận này thuộc về
     private String userId; // ID người dùng đã bình luận
-    private String userName; // Tên hiển thị của người dùng
     private String content; // Nội dung bình luận
     private long timestamp; // Thời gian tạo bình luận
 
     public Comment() {
     }
 
-    public Comment(String id, String postId, String userId, String userName, String content, long timestamp) {
+    public Comment(String id, String postId, String userId, String content, String s, long timestamp) {
         this.id = id;
         this.postId = postId;
         this.userId = userId;
-        this.userName = userName;
         this.content = content;
         this.timestamp = timestamp;
     }
@@ -42,14 +40,6 @@ public class Comment {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public String getContent() {
