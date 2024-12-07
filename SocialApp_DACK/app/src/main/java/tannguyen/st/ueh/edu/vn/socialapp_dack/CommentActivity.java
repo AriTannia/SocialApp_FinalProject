@@ -170,28 +170,30 @@ public class CommentActivity extends AppCompatActivity {
     }
 
     private void loadComments() {
-        // Lấy dữ liệu bình luận từ Firebase
-        commentsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Kiểm tra xem có dữ liệu mới không
-                if (snapshot.exists()) {
-                    commentList.clear();
-                    for (DataSnapshot commentSnapshot : snapshot.getChildren()) {
-                        Comment comment = commentSnapshot.getValue(Comment.class);
-                        if (comment != null) {
-                            commentList.add(comment);
+        // Lấy dữ liệu bình luận từ Firebase và sắp xếp theo timestamp giảm dần
+        commentsRef.orderByChild("timestamp").limitToLast(50)  // Bạn có thể điều chỉnh số lượng bình luận tải về (50 ở đây là ví dụ)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        // Kiểm tra xem có dữ liệu mới không
+                        if (snapshot.exists()) {
+                            commentList.clear();
+                            for (DataSnapshot commentSnapshot : snapshot.getChildren()) {
+                                Comment comment = commentSnapshot.getValue(Comment.class);
+                                if (comment != null) {
+                                    commentList.add(comment);
+                                }
+                            }
+                            // Cập nhật danh sách bình luận
+                            adapter.notifyDataSetChanged();
                         }
                     }
-                    // Cập nhật danh sách bình luận
-                    adapter.notifyDataSetChanged();
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CommentActivity.this, "Failed to load comments", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(CommentActivity.this, "Failed to load comments", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
+
 }
