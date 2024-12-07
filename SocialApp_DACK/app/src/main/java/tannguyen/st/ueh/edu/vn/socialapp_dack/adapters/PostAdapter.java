@@ -81,21 +81,22 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             // Load poster information (name and avatar) from Firebase
             fetchPosterInfo(post.getUserId(), holder);
 
-            // Set up button listeners for like, comment, save actions
+            // Khởi tạo trạng thái ban đầu (nếu cần)
+            holder.isLiked = false; // Add this field to your ViewHolder as a boolean property.
+
             holder.likeButton.setOnClickListener(v -> {
-                // Kiểm tra trạng thái hiện tại của nút (trắng hoặc đỏ)
-                Drawable currentDrawable = holder.likeButton.getDrawable();
-
-                if (Objects.equals(currentDrawable.getConstantState(), context.getResources().getDrawable(R.drawable.ic_like).getConstantState())) {
-                    // Nếu là icon trắng, đổi sang icon đỏ
-                    holder.likeButton.setImageResource(R.drawable.ic_like_red);
-                    Toast.makeText(context, "Liked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
-                } else {
-                    // Nếu là icon đỏ, đổi lại icon trắng
-                    holder.likeButton.setImageResource(R.drawable.ic_like);
+                // Kiểm tra trạng thái like
+                if (holder.isLiked) {
+                    // Nếu đã like, đổi lại trạng thái unlike
+                    holder.likeButton.setImageResource(R.drawable.ic_like); // Đổi lại icon màu trắng
+                    holder.isLiked = false; // Cập nhật trạng thái
                     Toast.makeText(context, "Unliked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
+                } else {
+                    // Nếu chưa like, đổi trạng thái sang like
+                    holder.likeButton.setImageResource(R.drawable.ic_like_red); // Đổi icon sang màu đỏ
+                    holder.isLiked = true; // Cập nhật trạng thái
+                    Toast.makeText(context, "Liked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
                 }
-
             });
 
             holder.commentButton.setOnClickListener(v -> {
@@ -212,6 +213,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     public static class PostViewHolder extends RecyclerView.ViewHolder {
         TextView titleTextView, contentTextView, timestampTextView, posterNameTextView;
         ImageView imageView, posterAvatarImageView; // Avatar ImageView
+        boolean isLiked;
         ImageButton likeButton, commentButton, saveButton, buttonEdit, buttonDelete;
 
         public PostViewHolder(@NonNull View itemView) {

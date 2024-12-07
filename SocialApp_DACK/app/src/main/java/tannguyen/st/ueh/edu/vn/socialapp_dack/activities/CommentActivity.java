@@ -1,10 +1,12 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,6 +35,7 @@ public class CommentActivity extends AppCompatActivity {
     private RecyclerView recyclerViewComments;
     private EditText editTextComment;
     private CommentAdapter adapter;
+    private ImageView backButton;
     private List<Comment> commentList;
     private DatabaseReference commentsRef;
     private String currentPostId;
@@ -41,6 +44,8 @@ public class CommentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comment);
+
+        backButton = findViewById(R.id.backButton);
 
         // Khởi tạo các thành phần giao diện
         recyclerViewComments = findViewById(R.id.recyclerViewComments);
@@ -82,6 +87,15 @@ public class CommentActivity extends AppCompatActivity {
 
         // Lấy danh sách bình luận từ Firebase
         loadComments();
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CommentActivity.this, HomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
     private void editComment(Comment comment) {
         // Hiển thị hộp thoại để chỉnh sửa bình luận
