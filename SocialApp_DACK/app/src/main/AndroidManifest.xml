@@ -49,6 +49,7 @@
         <activity android:name=".CommentActivity">
             <!-- Các cài đặt khác cho activity này, nếu có -->
         </activity>
+        <activity android:name=".PostDetailActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true" >
