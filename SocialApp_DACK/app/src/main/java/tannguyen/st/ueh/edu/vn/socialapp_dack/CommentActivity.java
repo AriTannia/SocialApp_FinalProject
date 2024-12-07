@@ -67,7 +67,6 @@ public class CommentActivity extends AppCompatActivity {
         loadComments();
     }
 
-
     private void postComment(View view) {
         // Lấy nội dung bình luận
         String content = editTextComment.getText().toString();
@@ -80,11 +79,12 @@ public class CommentActivity extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String commentId = UUID.randomUUID().toString();
+            String userName = currentUser.getDisplayName() != null ? currentUser.getDisplayName() : currentUser.getEmail();
             Comment comment = new Comment(
                     commentId,
                     currentPostId,
                     currentUser.getUid(),
-                    currentUser.getDisplayName() != null ? currentUser.getDisplayName() : currentUser.getEmail(),
+                    userName,
                     content,
                     System.currentTimeMillis()
             );
@@ -94,6 +94,7 @@ public class CommentActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // Nếu thành công, xóa nội dung nhập vào và thông báo
                     editTextComment.setText("");
+                    Toast.makeText(CommentActivity.this, "Comment posted successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
                 }
@@ -102,14 +103,19 @@ public class CommentActivity extends AppCompatActivity {
     }
 
     private void deleteComment(Comment comment) {
-        // Xóa bình luận
-        commentsRef.child(comment.getId()).removeValue().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Kiểm tra xem người xóa có phải là người tạo bình luận không
+        if (comment.getUserId().equals(FirebaseAuth.getInstance().getUid())) {
+            // Xóa bình luận
+            commentsRef.child(comment.getId()).removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(this, "You can only delete your own comments", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadComments() {
@@ -117,15 +123,18 @@ public class CommentActivity extends AppCompatActivity {
         commentsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                commentList.clear();
-                for (DataSnapshot commentSnapshot : snapshot.getChildren()) {
-                    Comment comment = commentSnapshot.getValue(Comment.class);
-                    if (comment != null) {
-                        commentList.add(comment);
+                // Kiểm tra xem có dữ liệu mới không
+                if (snapshot.exists()) {
+                    commentList.clear();
+                    for (DataSnapshot commentSnapshot : snapshot.getChildren()) {
+                        Comment comment = commentSnapshot.getValue(Comment.class);
+                        if (comment != null) {
+                            commentList.add(comment);
+                        }
                     }
+                    // Cập nhật danh sách bình luận
+                    adapter.notifyDataSetChanged();
                 }
-                // Cập nhật danh sách bình luận
-                adapter.notifyDataSetChanged();
             }
 
             @Override

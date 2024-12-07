@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import com.google.firebase.database.DataSnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -77,11 +76,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         // Xử lý nút "Sửa"
         holder.editButton.setOnClickListener(v -> {
             // Chuyển sang chế độ chỉnh sửa
-            holder.commentContent.setVisibility(View.GONE);
-            holder.editTextComment.setVisibility(View.VISIBLE);
-            holder.editTextComment.setText(comment.getContent());
-            holder.saveButton.setVisibility(View.VISIBLE);
-            holder.editButton.setVisibility(View.GONE);
+            holder.commentContent.setVisibility(View.GONE); // Ẩn nội dung bình luận hiện tại
+            holder.editTextComment.setVisibility(View.VISIBLE); // Hiển thị ô nhập bình luận mới
+            holder.editTextComment.setText(comment.getContent()); // Đặt nội dung ban đầu vào ô nhập
+            holder.saveButton.setVisibility(View.VISIBLE); // Hiển thị nút "Lưu"
+            holder.editButton.setVisibility(View.GONE); // Ẩn nút "Sửa"
         });
 
         // Xử lý nút "Lưu"
@@ -103,11 +102,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     Toast.makeText(context, "Comment updated successfully", Toast.LENGTH_SHORT).show();
 
                     // Cập nhật giao diện
-                    holder.commentContent.setVisibility(View.VISIBLE);
-                    holder.commentContent.setText(newContent);
-                    holder.editTextComment.setVisibility(View.GONE);
-                    holder.saveButton.setVisibility(View.GONE);
-                    holder.editButton.setVisibility(View.VISIBLE);
+                    holder.commentContent.setVisibility(View.VISIBLE); // Hiển thị lại nội dung bình luận
+                    holder.commentContent.setText(newContent); // Cập nhật nội dung mới
+                    holder.editTextComment.setVisibility(View.GONE); // Ẩn ô nhập bình luận
+                    holder.saveButton.setVisibility(View.GONE); // Ẩn nút "Lưu"
+                    holder.editButton.setVisibility(View.VISIBLE); // Hiển thị nút "Sửa"
                 } else {
                     Toast.makeText(context, "Failed to update comment", Toast.LENGTH_SHORT).show();
                 }

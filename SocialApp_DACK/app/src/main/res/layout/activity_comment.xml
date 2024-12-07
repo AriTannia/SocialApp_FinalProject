@@ -41,7 +41,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scrollbars="vertical"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:layout_marginBottom="8dp" /> <!-- Thêm margin dưới để không chạm vào phần nhập bình luận -->
 
     <!-- Phần nhập bình luận mới -->
     <LinearLayout
@@ -62,14 +63,14 @@
             android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:textSize="14sp"
-            android:backgroundTint="#CCCCCC" />
+            android:maxLines="3"
+            android:layout_marginEnd="8dp" /> <!-- Đảm bảo có margin phía cuối để tạo không gian -->
 
         <!-- Nút gửi bình luận -->
         <ImageView
             android:id="@+id/buttonSendComment"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_marginStart="8dp"
             android:src="@drawable/ic_send"
             android:contentDescription="Send Comment"
             android:padding="8dp"
