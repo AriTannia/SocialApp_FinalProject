@@ -1,40 +1,89 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    tools:context=".PostActivity">
 
-    <!-- Trường tiêu đề bài viết -->
-    <EditText
-        android:id="@+id/editTextTitle"
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Title" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:title="Create Post" />
 
-    <!-- Trường nội dung bài viết -->
-    <EditText
-        android:id="@+id/editTextContent"
+    <!-- ScrollView for the content -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Content"
-        android:lines="5"
-        android:gravity="top"
-        android:inputType="textMultiLine" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:fillViewport="true">
 
-    <!-- Hiển thị người đăng bài -->
-    <TextView
-        android:id="@+id/textViewUser"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Posted by: Username"
-        android:textColor="#000000"
-        android:paddingTop="8dp" />
+        <!-- Content Layout -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <!-- Nút đăng bài -->
-    <Button
-        android:id="@+id/buttonPost"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Post" />
+            <!-- Title -->
+            <EditText
+                android:id="@+id/editTextTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Title"
+                android:inputType="text"
+                android:layout_marginBottom="8dp" />
 
-</LinearLayout>
+            <!-- Content -->
+            <EditText
+                android:id="@+id/editTextContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Content"
+                android:inputType="textMultiLine"
+                android:layout_marginBottom="8dp"
+                android:minHeight="100dp" />
+
+            <!-- Image URL -->
+            <EditText
+                android:id="@+id/editTextImageUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Image URL (optional)"
+                android:inputType="textUri"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Display Image Preview -->
+            <ImageView
+                android:id="@+id/imagePreview"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="16dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <!-- User Info -->
+            <TextView
+                android:id="@+id/textViewUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Posted by: User"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Post Button -->
+            <Button
+                android:id="@+id/buttonPost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Post"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

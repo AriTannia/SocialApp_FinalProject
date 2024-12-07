@@ -1,44 +1,65 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:orientation="horizontal"
+    android:padding="10dp">
 
-    <TextView
-        android:id="@+id/commentUserName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="User Name"
-        android:textStyle="bold" />
+    <!-- Avatar người dùng bình luận -->
+    <ImageView
+        android:id="@+id/commentUserAvatar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/error_image"
+        android:contentDescription="User Avatar"
+        android:scaleType="centerCrop"
+        android:background="@drawable/circle_background" />
 
-    <TextView
-        android:id="@+id/commentContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Comment content" />
-
-    <TextView
-        android:id="@+id/commentTimestamp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Timestamp"
-        android:textSize="12sp"
-        android:textColor="#666" />
-
-    <!-- Chế độ chỉnh sửa -->
-    <EditText
-        android:id="@+id/editTextEditComment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Edit comment"
-        android:visibility="gone"
-        android:background="@drawable/edit_text_background" />
-
+    <!-- Nội dung bình luận -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="8dp">
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/commentUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User Name"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/commentContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Comment content here"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/commentTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Timestamp"
+            android:textSize="12sp"
+            android:textColor="#999999" />
+    </LinearLayout>
+
+    <!-- Nút xóa và chỉnh sửa -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/buttonDeleteComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_delete"
+            android:visibility="gone"
+            android:contentDescription="Delete Comment"
+            android:background="?android:attr/selectableItemBackground" />
 
         <Button
             android:id="@+id/buttonEditComment"
@@ -57,13 +78,6 @@
             android:layout_marginStart="8dp"
             android:background="@color/colorAccent"
             android:textColor="#FFFFFF" />
-        <ImageButton
-            android:id="@+id/buttonDeleteComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_delete"
-            android:visibility="gone" />
     </LinearLayout>
-
 
 </LinearLayout>

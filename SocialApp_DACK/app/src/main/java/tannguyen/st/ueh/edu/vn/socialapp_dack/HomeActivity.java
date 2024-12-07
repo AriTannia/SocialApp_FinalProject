@@ -103,11 +103,13 @@ public class HomeActivity extends AppCompatActivity {
         postsRef = mDatabase.getReference("posts");
 
         postList = new ArrayList<>(); // Initialize the list of posts
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String userId = (currentUser != null) ? currentUser.getUid() : null;  // Lấy userId
 
 
         postAdapter = new PostAdapter(this, postList, userId); // Initialize the adapter with the list
+
 
         // Load posts from Firebase
         loadPosts();

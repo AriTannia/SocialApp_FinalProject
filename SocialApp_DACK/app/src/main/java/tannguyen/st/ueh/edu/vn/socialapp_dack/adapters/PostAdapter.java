@@ -2,20 +2,22 @@ package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -39,7 +41,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         this.currentUserId = currentUserId;
     }
 
-
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -52,76 +53,69 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         Post post = postList.get(position);
 
         if (post != null) {
-            // Set data for title, content, timestamp, and poster name
+            // Set data for title, content, and timestamp
             holder.titleTextView.setText(post.getTitle());
             holder.contentTextView.setText(post.getContent());
             String formattedTimestamp = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                     .format(post.getTimestamp());
             holder.timestampTextView.setText(formattedTimestamp);
-            holder.posterNameTextView.setText(post.getPosterName()); // Assuming `getPosterName()` exists in your Post model
+            holder.posterNameTextView.setText(post.getPosterName()); // Display poster's name
+
+            // Load post image
+            if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
+                Picasso.get()
+                        .load(post.getImageUrl())
+                        .placeholder(R.drawable.placeholder_image) // Placeholder image
+                        .error(R.drawable.error_image) // Error image
+                        .fit()
+                        .centerCrop()
+                        .into(holder.imageView);
+            } else {
+                holder.imageView.setImageResource(R.drawable.placeholder_image);
+            }
+
+            // Load poster information (name and avatar) from Firebase
+            fetchPosterInfo(post.getUserId(), holder);
 
             // Set up button listeners for like, comment, save actions
             holder.likeButton.setOnClickListener(v -> {
-                // Handle "Like" action
                 Toast.makeText(context, "Liked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
             });
 
             holder.commentButton.setOnClickListener(v -> {
-                // Handle "Comment" action
-                Toast.makeText(context, "Commenting on: " + post.getTitle(), Toast.LENGTH_SHORT).show();
-
-                // Kiểm tra xem post.getId() có null không
-                String postId = post.getId();
-                if (postId != null && !postId.isEmpty()) {
-                    // Chuyển đến Activity bình luận, truyền ID của bài viết
-                    Intent intent = new Intent(context, CommentActivity.class);
-                    intent.putExtra("postId", postId);  // Truyền ID của bài viết
-                    context.startActivity(intent);  // Mở CommentActivity
-                } else {
-                    // Nếu không có postId, hiển thị lỗi hoặc thực hiện hành động khác
-                    Toast.makeText(context, "Post ID is invalid", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-
-            holder.saveButton.setOnClickListener(v -> {
-                // Handle "Save" action
-                Toast.makeText(context, "Saved: " + post.getTitle(), Toast.LENGTH_SHORT).show();
-            });
-            holder.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, PostDetailActivity.class);
-                intent.putExtra("postId", post.getId());  // Truyền ID bài viết
+                Intent intent = new Intent(context, CommentActivity.class);
+                intent.putExtra("POST_ID", post.getId());
                 context.startActivity(intent);
             });
 
+            holder.saveButton.setOnClickListener(v -> {
+                Toast.makeText(context, "Saved: " + post.getTitle(), Toast.LENGTH_SHORT).show();
+            });
 
-            // Xử lý click vào bài viết để xem chi tiết
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, PostDetailActivity.class);
                 intent.putExtra("postId", post.getId());
                 context.startActivity(intent);
             });
-//            // Kiểm tra nếu bài đăng này thuộc về người dùng hiện tại
+
+            // Show or hide edit and delete buttons if the post belongs to the current user
             if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
-                // Nếu userId của bài đăng và userId hiện tại là giống nhau, hiển thị nút sửa/xóa
                 holder.buttonEdit.setVisibility(View.VISIBLE);
                 holder.buttonDelete.setVisibility(View.VISIBLE);
-            }
-            else {
-                // Nếu không phải, ẩn các nút sửa/xóa
+            } else {
                 holder.buttonEdit.setVisibility(View.GONE);
                 holder.buttonDelete.setVisibility(View.GONE);
             }
-//            // Handle other button click events here
+
+            // Edit post action
             holder.buttonEdit.setOnClickListener(v -> {
-                // Chuyển tới EditPostActivity để sửa bài đăng
                 Intent intent = new Intent(context, EditPostActivity.class);
                 intent.putExtra("postId", post.getId());
                 context.startActivity(intent);
             });
 
+            // Delete post action
             holder.buttonDelete.setOnClickListener(v -> {
-                // Xóa bài đăng
                 deletePost(post);
             });
         }
@@ -131,40 +125,77 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     public int getItemCount() {
         return postList.size();
     }
-    // Xóa bài đăng
+
+    // Delete post from Firebase and update the RecyclerView
     private void deletePost(Post post) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("posts").document(post.getId())
-                .delete()
+        FirebaseDatabase.getInstance().getReference("posts").child(post.getId())
+                .removeValue()
                 .addOnSuccessListener(aVoid -> {
-                    // Xóa thành công, cập nhật danh sách
                     postList.remove(post);
                     notifyDataSetChanged();
+                    Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Xóa thất bại
                     Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    // Fetch poster's name and avatar from Firebase and update the ViewHolder
+    private void fetchPosterInfo(String uid, PostViewHolder holder) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+
+        userRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult().exists()) {
+                DataSnapshot snapshot = task.getResult();
+                String name = snapshot.child("name").getValue(String.class);
+                String image = snapshot.child("image").getValue(String.class);
+
+                // Set poster name
+                holder.posterNameTextView.setText(name != null ? name : "Unknown User");
+
+                // Set poster avatar
+                if (image != null && !image.isEmpty()) {
+                    Picasso.get()
+                            .load(image)
+                            .placeholder(R.drawable.error_image) // Placeholder image
+                            .error(R.drawable.error_image) // Error image
+                            .fit()
+                            .centerCrop()
+                            .into(holder.posterAvatarImageView);
+                } else {
+                    holder.posterAvatarImageView.setImageResource(R.drawable.error_image);
+                }
+            } else {
+                Log.e("Firebase", "Cannot load user info with UID: " + uid);
+                holder.posterNameTextView.setText("Unknown User");
+                holder.posterAvatarImageView.setImageResource(R.drawable.error_image);
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("Firebase", "Error fetching user info: " + e.getMessage());
+            holder.posterNameTextView.setText("Unknown User");
+            holder.posterAvatarImageView.setImageResource(R.drawable.error_image);
+        });
     }
 
     // ViewHolder class for RecyclerView
     public static class PostViewHolder extends RecyclerView.ViewHolder {
         TextView titleTextView, contentTextView, timestampTextView, posterNameTextView;
-        ImageButton likeButton, commentButton, saveButton,buttonEdit,buttonDelete;
-
-
+        ImageView imageView, posterAvatarImageView; // Avatar ImageView
+        ImageButton likeButton, commentButton, saveButton, buttonEdit, buttonDelete;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.postTitle);
             contentTextView = itemView.findViewById(R.id.postContent);
             timestampTextView = itemView.findViewById(R.id.postTimestamp);
-            posterNameTextView = itemView.findViewById(R.id.postPosterName); // New TextView for the poster name
-            likeButton = itemView.findViewById(R.id.buttonLike); // Like button
-            commentButton = itemView.findViewById(R.id.buttonComment); // Comment button
-            saveButton = itemView.findViewById(R.id.buttonSave); // Save button
+            posterNameTextView = itemView.findViewById(R.id.postPosterName);
+            imageView = itemView.findViewById(R.id.postImage);
+            posterAvatarImageView = itemView.findViewById(R.id.postProfileImage); // Avatar ImageView
+            likeButton = itemView.findViewById(R.id.buttonLike);
+            commentButton = itemView.findViewById(R.id.buttonComment);
+            saveButton = itemView.findViewById(R.id.buttonSave);
             buttonEdit = itemView.findViewById(R.id.buttonEdit);
-            buttonDelete  = itemView.findViewById(R.id.buttonDelete);
+            buttonDelete = itemView.findViewById(R.id.buttonDelete);
         }
     }
 }

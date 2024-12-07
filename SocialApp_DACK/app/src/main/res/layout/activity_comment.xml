@@ -1,10 +1,40 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="#FFFFFF"
+    android:padding="8dp">
 
-    <!-- Danh sách các bình luận -->
+    <!-- Thanh tiêu đề -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <!-- Nút quay lại -->
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back" />
+
+        <!-- Tiêu đề -->
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Comments"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
+    </LinearLayout>
+
+    <!-- Danh sách bình luận -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewComments"
         android:layout_width="match_parent"
@@ -18,7 +48,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:background="#F0F0F0">
 
         <!-- Ô nhập nội dung bình luận -->
         <EditText
@@ -29,18 +61,19 @@
             android:hint="Write a comment..."
             android:background="@drawable/edit_text_background"
             android:padding="12dp"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:backgroundTint="#CCCCCC" />
 
         <!-- Nút gửi bình luận -->
-        <Button
+        <ImageView
             android:id="@+id/buttonSendComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginStart="8dp"
-            android:text="Send"
-            android:textColor="#FFFFFF"
-            android:background="@color/colorPrimaryDark"
-            android:padding="12dp" />
+            android:src="@drawable/ic_send"
+            android:contentDescription="Send Comment"
+            android:tint="#3b5998"
+            android:padding="8dp" />
     </LinearLayout>
 
 </LinearLayout>

@@ -8,7 +8,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,7 +21,6 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class PostActivity extends AppCompatActivity {
 
-    private EditText titleEditText, contentEditText;
     private TextView userTextView;
     private SQLiteHelper databaseHelper;
     private DatabaseReference firebaseDatabase;
@@ -35,7 +33,6 @@ public class PostActivity extends AppCompatActivity {
         // Khởi tạo các thành phần giao diện
         titleEditText = findViewById(R.id.editTextTitle);
         contentEditText = findViewById(R.id.editTextContent);
-        userTextView = findViewById(R.id.textViewUser); // Lấy đối tượng TextView
 
         databaseHelper = new SQLiteHelper(this);
         firebaseDatabase = FirebaseDatabase.getInstance().getReference("posts");
@@ -43,63 +40,35 @@ public class PostActivity extends AppCompatActivity {
         // Kiểm tra xem người dùng đã đăng nhập chưa
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            // Nếu người dùng đã đăng nhập, lấy tên và hiển thị
-            String posterName = currentUser.getDisplayName(); // Lấy tên người dùng từ Firebase
-            if (posterName == null || posterName.isEmpty()) {
-                posterName = currentUser.getEmail(); // Nếu không có tên, sử dụng email
-            }
-            // Hiển thị tên người dùng trong TextView
-            userTextView.setText("Posted by: " + posterName);
         } else {
-            // Nếu người dùng chưa đăng nhập, hiển thị thông báo
-            Toast.makeText(this, "You need to be logged in to post.", Toast.LENGTH_SHORT).show();
-            finish(); // Đóng activity nếu chưa đăng nhập
             return;
         }
 
         // Xử lý khi người dùng nhấn nút đăng bài
         findViewById(R.id.buttonPost).setOnClickListener(v -> createPost());
-        // Lấy thông tin bài đăng
-        String postId = getIntent().getStringExtra("postId");
 
     }
 
     private void createPost() {
-        // Lấy dữ liệu tiêu đề và nội dung bài viết
         String title = titleEditText.getText().toString();
         String content = contentEditText.getText().toString();
 
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(content)) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Lấy người dùng đã đăng nhập
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        String userId = currentUser != null ? currentUser.getUid() : null;
         if (currentUser != null) {
-            String posterName = currentUser.getDisplayName();
-            if (posterName == null || posterName.isEmpty()) {
-                posterName = currentUser.getEmail();  // Dự phòng bằng email nếu không có tên hiển thị
-            }
 
-            // Tạo ID bài viết và timestamp
             String id = UUID.randomUUID().toString();
             long timestamp = System.currentTimeMillis();
 
-            // Tạo đối tượng Post
-            Post post = new Post(id, title, content, timestamp,userId, posterName);
 
-            // Lưu bài viết vào SQLite
             databaseHelper.addPost(post);
 
-            // Lưu bài viết vào Firebase
             firebaseDatabase.child(id).setValue(post).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Toast.makeText(this, "Post created successfully", Toast.LENGTH_SHORT).show();
-                    finish();  // Đóng activity sau khi tạo bài viết thành công
                 } else {
-                    Toast.makeText(this, "Failed to post", Toast.LENGTH_SHORT).show();
                 }
             });
         }
