@@ -7,11 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 2; // Tăng version để kích hoạt `onUpgrade`
+    private static final int DATABASE_VERSION = 3; // Tăng version để kích hoạt `onUpgrade`
 
     // Bảng Users
     public static final String TABLE_USERS = "Users";
@@ -29,6 +30,15 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_CONTENT = "content";
     private static final String COLUMN_TIMESTAMP = "timestamp";
 
+    // Bảng Messages
+    public static final String TABLE_MESSAGES = "Messages";
+    public static final String COLUMN_MESSAGE_ID = "messageId";
+    public static final String COLUMN_SENDER = "sender";
+    public static final String COLUMN_RECEIVER = "receiver";
+    public static final String COLUMN_MESSAGE = "message";
+    public static final String COLUMN_MESSAGE_TIMESTAMP = "timestamp";
+    public static final String COLUMN_IS_SEEN = "isSeen";
+
     private SQLiteDatabase writableDb; // Cơ sở dữ liệu ghi
 
     public SQLiteHelper(Context context) {
@@ -37,19 +47,41 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createTable = "CREATE TABLE " + TABLE_USERS + "(" +
-                "uid TEXT PRIMARY KEY, " +  // Sử dụng uid từ Firebase
+        // Tạo bảng Users
+        String createUsersTable = "CREATE TABLE " + TABLE_USERS + "(" +
+                COLUMN_UID + " TEXT PRIMARY KEY, " +
                 COLUMN_NAME + " TEXT, " +
                 COLUMN_EMAIL + " TEXT UNIQUE, " +
                 COLUMN_PHONE + " TEXT, " +
                 COLUMN_IMAGE + " TEXT, " +
-                COLUMN_COVER + " TEXT" + ")";
-        db.execSQL(createTable);
+                COLUMN_COVER + " TEXT)";
+        db.execSQL(createUsersTable);
+
+        // Tạo bảng Posts
+        String createPostsTable = "CREATE TABLE " + TABLE_POSTS + "(" +
+                COLUMN_POST_ID + " TEXT PRIMARY KEY, " +
+                COLUMN_TITLE + " TEXT, " +
+                COLUMN_CONTENT + " TEXT, " +
+                COLUMN_TIMESTAMP + " TEXT)";
+        db.execSQL(createPostsTable);
+
+        // Tạo bảng Messages
+        String createMessagesTable = "CREATE TABLE " + TABLE_MESSAGES + "(" +
+                COLUMN_MESSAGE_ID + " TEXT PRIMARY KEY, " +
+                COLUMN_SENDER + " TEXT, " +
+                COLUMN_RECEIVER + " TEXT, " +
+                COLUMN_MESSAGE + " TEXT, " +
+                COLUMN_MESSAGE_TIMESTAMP + " TEXT, " +
+                COLUMN_IS_SEEN + " INTEGER)";
+        db.execSQL(createMessagesTable);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Xóa bảng cũ khi nâng cấp cơ sở dữ liệu
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_POSTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
         onCreate(db);
     }
 
@@ -135,6 +167,32 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             writableDb.close();
         }
         super.close();
+    }
+
+    public Cursor getAllUsers() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + TABLE_USERS, null);
+    }
+
+    public void insertMessage(MessageModel message) {
+        SQLiteDatabase db = getWritableDb();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_MESSAGE_ID, message.getMessageId());
+        values.put(COLUMN_SENDER, message.getSender());
+        values.put(COLUMN_RECEIVER, message.getReceiver());
+        values.put(COLUMN_MESSAGE, message.getMessage());
+        values.put(COLUMN_MESSAGE_TIMESTAMP, message.getTimestamp());
+        values.put(COLUMN_IS_SEEN, message.isSeen() ? 1 : 0); // Chuyển đổi boolean sang int
+
+        db.insert(TABLE_MESSAGES, null, values);
+    }
+
+    public Cursor getMessages(String senderUid, String receiverUid) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + TABLE_MESSAGES +
+                        " WHERE (" + COLUMN_SENDER + "=? AND " + COLUMN_RECEIVER + "=?) OR " +
+                        "(" + COLUMN_SENDER + "=? AND " + COLUMN_RECEIVER + "=?)",
+                new String[]{senderUid, receiverUid, receiverUid, senderUid});
     }
 
     public void addPost(Post post) {

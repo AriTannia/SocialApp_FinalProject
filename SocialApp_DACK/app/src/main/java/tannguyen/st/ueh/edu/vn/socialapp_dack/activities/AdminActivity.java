@@ -12,11 +12,13 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,7 +36,8 @@ public class AdminActivity extends AppCompatActivity {
 
     private RecyclerView recyclerViewUsers;
     private Button btnAddUser; // Nút thêm tài khoản
-    private Button btnLogout;
+    private FirebaseAuth mAuth;
+    private FirebaseUser user;
     private BottomNavigationView bottomNavigation; // Thanh điều hướng dưới cùng
 
 
@@ -43,16 +46,17 @@ public class AdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
+        mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
+
         // Ánh xạ RecyclerView
         recyclerViewUsers = findViewById(R.id.recyclerViewUsers);
         recyclerViewUsers.setLayoutManager(new LinearLayoutManager(this));
 
         btnAddUser = findViewById(R.id.btnAddUser); // Ánh xạ nút thêm tài khoản
-        btnLogout = findViewById(R.id.btnLogout);  // Nút đăng xuất
         bottomNavigation = findViewById(R.id.bottom_navigation);
 
         btnAddUser.setOnClickListener(v -> showAddUserDialog()); // Gọi dialog thêm tài khoản
-        btnLogout.setOnClickListener(v -> logoutUser()); // Gọi hàm đăng xuất
 
         // Xử lý sự kiện khi chọn mục trong BottomNavigationView
         bottomNavigation.setOnItemSelectedListener(item -> {
@@ -72,21 +76,35 @@ public class AdminActivity extends AppCompatActivity {
             }
         });
 
+        // Setup Toolbar
+        Toolbar toolbar1 = findViewById(R.id.toolbar1);
+        setSupportActionBar(toolbar1);
+
 
         // Tải danh sách người dùng
         loadUsers();
     }
 
-    private void logoutUser() {
-        FirebaseAuth.getInstance().signOut(); // Đăng xuất khỏi Firebase Auth
-        Toast.makeText(this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
-
-        // Chuyển về màn hình đăng nhập
-        Intent intent = new Intent(AdminActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish(); // Đóng AdminActivity
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if (item.getItemId() == R.id.menu_logout) {
+            mAuth.signOut();
+            Toast.makeText(this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_logout, menu);
+        return true; // Trả về true để hiển thị menu
+    }
+
+
 
 
     private void showAddUserDialog() {

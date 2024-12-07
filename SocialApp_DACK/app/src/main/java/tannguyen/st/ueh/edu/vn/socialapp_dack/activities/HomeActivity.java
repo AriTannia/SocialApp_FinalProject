@@ -26,6 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -103,10 +104,18 @@ public class HomeActivity extends AppCompatActivity {
         postsRef = mDatabase.getReference("posts");
 
         postList = new ArrayList<>(); // Initialize the list of posts
-        postAdapter = new PostAdapter(this, postList); // Initialize the adapter with the list
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = (currentUser != null) ? currentUser.getUid() : null;  // Lấy userId
+
+
+        postAdapter = new PostAdapter(this, postList, userId); // Initialize the adapter with the list
+
 
         // Load posts from Firebase
         loadPosts();
+        Fragment defaultFragment = new HomeFragment();
+        replaceFragment(defaultFragment);
     }
 
     // Method to replace the fragment
