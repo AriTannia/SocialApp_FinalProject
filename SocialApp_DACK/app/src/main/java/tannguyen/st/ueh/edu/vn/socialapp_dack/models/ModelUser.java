@@ -14,14 +14,14 @@ public class ModelUser {
     }
 
     // Constructor có tham số để tạo đối tượng User
-    public ModelUser(String name, String email, String password, String phone, String image, String uid, String coverIv) {
+    public ModelUser(String name, String email, String password, String phone, String image, String uid, String cover) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.phone = phone;
         this.image = image;
         this.uid = uid;
-        this.cover = coverIv;
+        this.cover = cover;
     }
 
     // Getter và Setter cho các thuộc tính

@@ -1,7 +1,9 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.CommentActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.EditPostActivity;
@@ -48,6 +51,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         return new PostViewHolder(view);
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Post post = postList.get(position);
@@ -79,7 +83,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
             // Set up button listeners for like, comment, save actions
             holder.likeButton.setOnClickListener(v -> {
-                Toast.makeText(context, "Liked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
+                // Kiểm tra trạng thái hiện tại của nút (trắng hoặc đỏ)
+                Drawable currentDrawable = holder.likeButton.getDrawable();
+
+                if (Objects.equals(currentDrawable.getConstantState(), context.getResources().getDrawable(R.drawable.ic_like).getConstantState())) {
+                    // Nếu là icon trắng, đổi sang icon đỏ
+                    holder.likeButton.setImageResource(R.drawable.ic_like_red);
+                    Toast.makeText(context, "Liked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
+                } else {
+                    // Nếu là icon đỏ, đổi lại icon trắng
+                    holder.likeButton.setImageResource(R.drawable.ic_like);
+                    Toast.makeText(context, "Unliked: " + post.getTitle(), Toast.LENGTH_SHORT).show();
+                }
+
             });
 
             holder.commentButton.setOnClickListener(v -> {
