@@ -1,7 +1,12 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -29,7 +34,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.MessageAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 
 public class ChatActivity extends AppCompatActivity {
@@ -45,6 +52,7 @@ public class ChatActivity extends AppCompatActivity {
     // Firebase
     FirebaseAuth mAuth;
     DatabaseReference userRef, chatRef;
+    private SQLiteHelper sqliteHelper; // Thêm biến cho SQLiteHelper
 
     String hisUid; // Receiver's UID
     String myUid;  // Sender's UID
@@ -75,6 +83,8 @@ public class ChatActivity extends AppCompatActivity {
         myUid = mAuth.getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference("Users");
         chatRef = FirebaseDatabase.getInstance().getReference("Chats");
+
+        sqliteHelper = new SQLiteHelper(this);
 
         messageList = new ArrayList<>();
         adapter = new MessageAdapter(ChatActivity.this, messageList, chatRef, myUid); // Pass chatRef and myUid
@@ -203,7 +213,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage(String message) {
-        String messageId = chatRef.push().getKey(); // Generate a unique key for the message
+        String messageId = chatRef.push().getKey();
         String timestamp = String.valueOf(System.currentTimeMillis());
 
         HashMap<String, Object> chatMessage = new HashMap<>();
@@ -215,21 +225,36 @@ public class ChatActivity extends AppCompatActivity {
         chatMessage.put("isSeen", false);
 
         chatRef.child(messageId).setValue(chatMessage)
-                .addOnSuccessListener(aVoid -> messageEt.setText("")) // Clear input field
+                .addOnSuccessListener(aVoid -> {
+                    messageEt.setText(""); // Clear input field
+                    // Lưu tin nhắn vào SQLite
+                    MessageModel messageModel = new MessageModel(messageId, myUid, hisUid, message, timestamp, false);
+                    sqliteHelper.insertMessage(messageModel);
+                })
                 .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Không thể gửi tin nhắn: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void loadMessages() {
+        if (isNetworkAvailable()) {
+            // Nếu có mạng, tải dữ liệu từ Firebase
+            loadMessagesFromFirebase();
+        } else {
+            // Nếu không có mạng, tải dữ liệu từ SQLite
+            loadMessagesFromSQLite();
+        }
+    }
+
+    private void loadMessagesFromFirebase() {
         chatRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 messageList.clear();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     MessageModel message = ds.getValue(MessageModel.class);
-
-                    if ((message.getSender().equals(myUid) && message.getReceiver().equals(hisUid)) ||
-                            (message.getSender().equals(hisUid) && message.getReceiver().equals(myUid))) {
+                    if (message != null) {
                         messageList.add(message);
+                        // Lưu tin nhắn vào SQLite
+                        sqliteHelper.insertMessage(message);
                     }
                 }
                 adapter.notifyDataSetChanged();
@@ -238,10 +263,56 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ChatActivity.this, "Không thể tải tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ChatActivity.this, "Lỗi Firebase: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
+
+    private void loadMessagesFromSQLite() {
+        Cursor cursor = sqliteHelper.getMessages(myUid, hisUid);
+        messageList.clear();
+
+        if (cursor != null) {
+            try {
+                // Kiểm tra danh sách các cột trong cursor
+                for (String columnName : cursor.getColumnNames()) {
+                    Log.d("SQLiteHelper", "Found column: " + columnName);
+                }
+
+                int messageIdIndex = cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE_ID);
+                int senderIndex = cursor.getColumnIndex(SQLiteHelper.COLUMN_SENDER);
+                int receiverIndex = cursor.getColumnIndex(SQLiteHelper.COLUMN_RECEIVER);
+                int messageIndex = cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE);
+                int timestampIndex = cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE_TIMESTAMP);
+                int isSeenIndex = cursor.getColumnIndex(SQLiteHelper.COLUMN_IS_SEEN);
+
+                if (messageIdIndex == -1 || senderIndex == -1 || receiverIndex == -1 ||
+                        messageIndex == -1 || timestampIndex == -1 || isSeenIndex == -1) {
+                    throw new IllegalArgumentException("Một hoặc nhiều cột không tồn tại trong bảng Messages");
+                }
+
+                while (cursor.moveToNext()) {
+                    String messageId = cursor.getString(messageIdIndex);
+                    String sender = cursor.getString(senderIndex);
+                    String receiver = cursor.getString(receiverIndex);
+                    String message = cursor.getString(messageIndex);
+                    String timestamp = cursor.getString(timestampIndex);
+                    boolean isSeen = cursor.getInt(isSeenIndex) == 1;
+
+                    MessageModel messageModel = new MessageModel(messageId, sender, receiver, message, timestamp, isSeen);
+                    messageList.add(messageModel);
+                }
+            } catch (Exception e) {
+                Log.e("SQLiteHelper", "Lỗi khi tải tin nhắn từ SQLite: " + e.getMessage());
+            } finally {
+                cursor.close();
+            }
+        }
+
+        adapter.notifyDataSetChanged();
+        chatRecyclerView.scrollToPosition(messageList.size() - 1);
+    }
+
 
     private void markMessagesAsSeen(String hisUid) {
         chatRef.addValueEventListener(new ValueEventListener() {
@@ -262,5 +333,12 @@ public class ChatActivity extends AppCompatActivity {
                 Toast.makeText(ChatActivity.this, "Không thể cập nhật trạng thái 'Đã xem'", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

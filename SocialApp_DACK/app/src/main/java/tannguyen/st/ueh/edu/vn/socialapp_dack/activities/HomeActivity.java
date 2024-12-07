@@ -1,10 +1,8 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,15 +19,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,7 +34,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.fragments.HomeFragment;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.PostAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.fragments.ProfileFragment;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.fragments.UsersFragment;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class HomeActivity extends AppCompatActivity {

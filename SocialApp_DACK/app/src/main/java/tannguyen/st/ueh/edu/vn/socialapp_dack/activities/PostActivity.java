@@ -1,6 +1,5 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
@@ -16,6 +15,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.UUID;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class PostActivity extends AppCompatActivity {

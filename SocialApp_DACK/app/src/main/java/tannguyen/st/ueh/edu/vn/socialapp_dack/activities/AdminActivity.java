@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,7 +6,6 @@ import android.text.InputType;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.view.View;
 import android.widget.Button;
 
 
@@ -29,6 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterAdminUser;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 

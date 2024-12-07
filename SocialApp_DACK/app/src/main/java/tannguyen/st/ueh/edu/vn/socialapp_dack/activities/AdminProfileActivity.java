@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +26,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
+
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 
 public class AdminProfileActivity extends AppCompatActivity {
 

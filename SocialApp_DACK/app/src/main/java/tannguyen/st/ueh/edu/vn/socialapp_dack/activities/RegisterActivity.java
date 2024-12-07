@@ -1,4 +1,4 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -20,8 +20,7 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
-
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class RegisterActivity extends AppCompatActivity {
