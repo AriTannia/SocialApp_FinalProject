@@ -13,15 +13,15 @@ public class Post {
     public Post() {}
 
     // Constructor đầy đủ để tạo một bài viết mới
-    public Post(String id, String title, String content, long timestamp, String imageUrl, String userId) {
+    public Post(String id, String title, String content, long timestamp, String imageUrl, String userId, String posterName) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.timestamp = timestamp;
-        this.imageUrl = imageUrl; // Thêm imageUrl vào constructor
+        this.imageUrl = imageUrl;
         this.userId = userId;
+        this.posterName = posterName;  // Gán tên người đăng
     }
-
 
     // Getters và Setters
     public String getId() { return id; }

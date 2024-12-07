@@ -51,16 +51,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         Comment comment = commentList.get(position);
 
         holder.commentUserName.setText(comment.getUserName());
-
-
-        // Hiển thị nội dung bình luận và thời gian
-
         holder.commentContent.setText(comment.getContent());
         holder.commentTimestamp.setText(new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                 .format(comment.getTimestamp()));
 
-
-        // Lấy thông tin người dùng từ Firebase (tên và avatar)
         fetchUserInfo(comment.getUserId(), holder);
 
         // Hiển thị nút xóa nếu đây là bình luận của người dùng hiện tại
@@ -72,6 +66,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         } else {
             holder.deleteButton.setVisibility(View.GONE);
         }
+
         // Hiển thị nút "Sửa" nếu bình luận thuộc về người dùng hiện tại
         if (comment.getUserId().equals(currentUserId)) {
             holder.editButton.setVisibility(View.VISIBLE);
@@ -118,7 +113,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 }
             });
         });
-
     }
 
     @Override
@@ -172,7 +166,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         ImageButton deleteButton;
         EditText editTextComment;
         Button editButton, saveButton;
-        ImageView commentAvatarImageView; // ImageView cho avatar người bình luận
+        ImageView commentAvatarImageView;
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -184,7 +178,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             editButton = itemView.findViewById(R.id.buttonEditComment);
             saveButton = itemView.findViewById(R.id.buttonSaveComment);
             commentAvatarImageView = itemView.findViewById(R.id.commentUserAvatar); // Avatar ImageView
-            deleteButton = itemView.findViewById(R.id.buttonDeleteComment);
         }
     }
 }

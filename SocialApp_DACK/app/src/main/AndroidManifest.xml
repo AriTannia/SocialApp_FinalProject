@@ -35,9 +35,20 @@
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
+
+        <activity android:name=".EditPostActivity">
+            <!-- Các cài đặt khác cho activity này, nếu có -->
+        </activity>
+
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+        <activity
+            android:name=".PostActivity"
+            android:exported="false" />
+        <activity android:name=".CommentActivity">
+            <!-- Các cài đặt khác cho activity này, nếu có -->
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true" >

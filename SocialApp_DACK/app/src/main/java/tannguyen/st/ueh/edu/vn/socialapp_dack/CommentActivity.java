@@ -42,11 +42,12 @@ public class CommentActivity extends AppCompatActivity {
 
         // Khởi tạo các thành phần giao diện
         recyclerViewComments = findViewById(R.id.recyclerViewComments);
-        editTextComment = findViewById(R.id.editTextComment);
+        editTextComment = findViewById(R.id.editTextEditComment);
         findViewById(R.id.buttonSendComment).setOnClickListener(this::postComment);
 
         // Lấy ID bài viết hiện tại từ Intent
-        if (currentPostId == null) {
+        currentPostId = getIntent().getStringExtra("POST_ID");  // Lấy postId từ Intent
+        if (currentPostId == null || currentPostId.isEmpty()) {
             // Nếu không có POST_ID, thông báo và đóng Activity
             Toast.makeText(this, "Post ID is missing!", Toast.LENGTH_SHORT).show();
             finish();  // Đóng CommentActivity nếu không có POST_ID
@@ -65,6 +66,7 @@ public class CommentActivity extends AppCompatActivity {
         // Lấy danh sách bình luận từ Firebase
         loadComments();
     }
+
 
     private void postComment(View view) {
         // Lấy nội dung bình luận

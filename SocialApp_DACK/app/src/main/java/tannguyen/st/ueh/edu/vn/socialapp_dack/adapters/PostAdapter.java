@@ -83,10 +83,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             });
 
             holder.commentButton.setOnClickListener(v -> {
+                // Khi nhấn nút comment, mở CommentActivity và truyền POST_ID vào
                 Intent intent = new Intent(context, CommentActivity.class);
-                intent.putExtra("POST_ID", post.getId());
-                context.startActivity(intent);
+                intent.putExtra("POST_ID", post.getId());  // Truyền POST_ID vào Intent
+                context.startActivity(intent);  // Khởi động Activity
             });
+
 
             holder.saveButton.setOnClickListener(v -> {
                 Toast.makeText(context, "Saved: " + post.getTitle(), Toast.LENGTH_SHORT).show();
@@ -100,26 +102,39 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
             // Show or hide edit and delete buttons if the post belongs to the current user
             if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
-                holder.buttonEdit.setVisibility(View.VISIBLE);
-                holder.buttonDelete.setVisibility(View.VISIBLE);
+                if (holder.buttonEdit != null) {
+                    holder.buttonEdit.setVisibility(View.VISIBLE);
+                }
+                if (holder.buttonDelete != null) {
+                    holder.buttonDelete.setVisibility(View.VISIBLE);
+                }
             } else {
-                holder.buttonEdit.setVisibility(View.GONE);
-                holder.buttonDelete.setVisibility(View.GONE);
+                if (holder.buttonEdit != null) {
+                    holder.buttonEdit.setVisibility(View.GONE);
+                }
+                if (holder.buttonDelete != null) {
+                    holder.buttonDelete.setVisibility(View.GONE);
+                }
             }
 
             // Edit post action
-            holder.buttonEdit.setOnClickListener(v -> {
-                Intent intent = new Intent(context, EditPostActivity.class);
-                intent.putExtra("postId", post.getId());
-                context.startActivity(intent);
-            });
+            if (holder.buttonEdit != null) {
+                holder.buttonEdit.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, EditPostActivity.class);
+                    intent.putExtra("postId", post.getId());
+                    context.startActivity(intent);
+                });
+            }
 
             // Delete post action
-            holder.buttonDelete.setOnClickListener(v -> {
-                deletePost(post);
-            });
+            if (holder.buttonDelete != null) {
+                holder.buttonDelete.setOnClickListener(v -> {
+                    deletePost(post);
+                });
+            }
         }
     }
+
 
     @Override
     public int getItemCount() {

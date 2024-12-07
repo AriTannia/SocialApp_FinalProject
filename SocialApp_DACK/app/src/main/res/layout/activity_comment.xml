@@ -54,7 +54,7 @@
 
         <!-- Ô nhập nội dung bình luận -->
         <EditText
-            android:id="@+id/editTextComment"
+            android:id="@+id/editTextEditComment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -72,8 +72,8 @@
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_send"
             android:contentDescription="Send Comment"
-            android:tint="#3b5998"
-            android:padding="8dp" />
+            android:padding="8dp"
+            app:tint="#3b5998" />
     </LinearLayout>
 
 </LinearLayout>

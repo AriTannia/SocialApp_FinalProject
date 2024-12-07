@@ -8,9 +8,11 @@ public class Comment {
     private String content; // Nội dung bình luận
     private long timestamp; // Thời gian tạo bình luận
 
+    // Constructor không tham số
     public Comment() {
     }
 
+    // Constructor với tham số đầy đủ
     public Comment(String id, String postId, String userId, String userName, String content, long timestamp) {
         this.id = id;
         this.postId = postId;
@@ -19,6 +21,8 @@ public class Comment {
         this.content = content;
         this.timestamp = timestamp;
     }
+
+    // Các getter và setter
 
     public String getId() {
         return id;
