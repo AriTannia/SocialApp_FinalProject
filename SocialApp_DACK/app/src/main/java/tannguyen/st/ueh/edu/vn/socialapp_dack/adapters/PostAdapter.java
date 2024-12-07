@@ -23,9 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
-import tannguyen.st.ueh.edu.vn.socialapp_dack.CommentActivity;
-import tannguyen.st.ueh.edu.vn.socialapp_dack.EditPostActivity;
-import tannguyen.st.ueh.edu.vn.socialapp_dack.PostDetailActivity;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.CommentActivity;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.EditPostActivity;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.PostDetailActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 

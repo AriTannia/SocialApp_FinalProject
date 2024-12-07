@@ -38,23 +38,17 @@
             android:theme="@style/AppThemeNo"
             android:exported="false" />
 
-        <activity android:name=".EditPostActivity">
+        <activity android:name=".activities.EditPostActivity">
             <!-- Các cài đặt khác cho activity này, nếu có -->
         </activity>
 
         <activity
             android:name=".activities.HomeActivity"
             android:exported="false" />
-        <activity
-            android:name=".PostActivity"
-            android:exported="false" />
-        <activity android:name=".CommentActivity">
+        <activity android:name=".activities.CommentActivity">
             <!-- Các cài đặt khác cho activity này, nếu có -->
         </activity>
-        <activity android:name=".PostDetailActivity" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true" >
+        <activity android:name=".activities.PostDetailActivity" />
         <activity
             android:name=".activities.RegisterActivity"
             android:exported="false" />

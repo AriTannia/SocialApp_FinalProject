@@ -1,10 +1,11 @@
-package tannguyen.st.ueh.edu.vn.socialapp_dack;
+package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,43 +25,51 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.CommentAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Comment;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
-public class CommentActivity extends AppCompatActivity {
+public class PostDetailActivity extends AppCompatActivity {
 
+    private TextView postTitleTextView, postContentTextView, postAuthorTextView;
     private RecyclerView recyclerViewComments;
     private EditText editTextComment;
-    private CommentAdapter adapter;
-    private List<Comment> commentList;
-    private DatabaseReference commentsRef;
+    private Button buttonSendComment;
+
     private String currentPostId;
+    private DatabaseReference postRef, commentsRef;
+    private List<Comment> commentList;
+    private CommentAdapter commentAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_comment);
+        setContentView(R.layout.activity_post_detail);
 
-        // Khởi tạo các thành phần giao diện
-        recyclerViewComments = findViewById(R.id.recyclerViewComments);
-        editTextComment = findViewById(R.id.editTextEditComment);
-        findViewById(R.id.buttonSendComment).setOnClickListener(this::postComment);
+        // Liên kết các view trong layout
+        postTitleTextView = findViewById(R.id.textViewPostTitle);
+        postContentTextView = findViewById(R.id.textViewPostContent);
+        postAuthorTextView = findViewById(R.id.textViewPostAuthor);
+        recyclerViewComments = findViewById(R.id.recyclerViewPostComments);
+        editTextComment = findViewById(R.id.editTextComment);
+        buttonSendComment = findViewById(R.id.buttonSendComment);
 
-        // Lấy ID bài viết hiện tại từ Intent
-        currentPostId = getIntent().getStringExtra("POST_ID");  // Lấy postId từ Intent
-        if (currentPostId == null || currentPostId.isEmpty()) {
-            // Nếu không có POST_ID, thông báo và đóng Activity
+        // Lấy ID bài viết từ Intent
+        currentPostId = getIntent().getStringExtra("postId");
+        if (currentPostId == null) {
             Toast.makeText(this, "Post ID is missing!", Toast.LENGTH_SHORT).show();
-            finish();  // Đóng CommentActivity nếu không có POST_ID
+            finish();
             return;
         }
 
-        // Khởi tạo Firebase
+        // Firebase references
+        postRef = FirebaseDatabase.getInstance().getReference("posts").child(currentPostId);
         commentsRef = FirebaseDatabase.getInstance().getReference("comments").child(currentPostId);
 
-        // Khởi tạo adapter và danh sách bình luận
+        // Danh sách bình luận
         commentList = new ArrayList<>();
-        adapter = new CommentAdapter(
+        commentAdapter = new CommentAdapter(
                 this,
                 commentList,
                 FirebaseAuth.getInstance().getUid(),
@@ -77,10 +86,14 @@ public class CommentActivity extends AppCompatActivity {
                 }
         );
         recyclerViewComments.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewComments.setAdapter(adapter);
+        recyclerViewComments.setAdapter(commentAdapter);
 
-        // Lấy danh sách bình luận từ Firebase
+        // Tải thông tin bài đăng và bình luận
+        loadPostDetails();
         loadComments();
+
+        // Xử lý khi nhấn nút gửi bình luận
+        buttonSendComment.setOnClickListener(v -> postComment());
     }
     private void editComment(Comment comment) {
         // Hiển thị hộp thoại để chỉnh sửa bình luận
@@ -118,34 +131,68 @@ public class CommentActivity extends AppCompatActivity {
         // Hiển thị hộp thoại
         builder.show();
     }
-    private void postComment(View view) {
-        // Lấy nội dung bình luận
+    private void loadPostDetails() {
+        postRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Post post = snapshot.getValue(Post.class);
+                if (post != null) {
+                    postTitleTextView.setText(post.getTitle());
+                    postContentTextView.setText(post.getContent());
+                    postAuthorTextView.setText("Posted by: " + post.getPosterName());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PostDetailActivity.this, "Failed to load post details", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadComments() {
+        commentsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                commentList.clear();
+                for (DataSnapshot commentSnapshot : snapshot.getChildren()) {
+                    Comment comment = commentSnapshot.getValue(Comment.class);
+                    if (comment != null) {
+                        commentList.add(comment);
+                    }
+                }
+                commentAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PostDetailActivity.this, "Failed to load comments", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void postComment() {
         String content = editTextComment.getText().toString();
         if (TextUtils.isEmpty(content)) {
             Toast.makeText(this, "Comment cannot be empty!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Lấy thông tin người dùng
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String commentId = UUID.randomUUID().toString();
-            String userName = currentUser.getDisplayName() != null ? currentUser.getDisplayName() : currentUser.getEmail();
             Comment comment = new Comment(
                     commentId,
                     currentPostId,
                     currentUser.getUid(),
-                    userName,
+                    currentUser.getDisplayName() != null ? currentUser.getDisplayName() : currentUser.getEmail(),
                     content,
                     System.currentTimeMillis()
             );
 
-            // Lưu bình luận vào Firebase
             commentsRef.child(commentId).setValue(comment).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    // Nếu thành công, xóa nội dung nhập vào và thông báo
                     editTextComment.setText("");
-                    Toast.makeText(CommentActivity.this, "Comment posted successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show();
                 }
@@ -154,46 +201,12 @@ public class CommentActivity extends AppCompatActivity {
     }
 
     private void deleteComment(Comment comment) {
-        // Kiểm tra xem người xóa có phải là người tạo bình luận không
-        if (comment.getUserId().equals(FirebaseAuth.getInstance().getUid())) {
-            // Xóa bình luận
-            commentsRef.child(comment.getId()).removeValue().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            Toast.makeText(this, "You can only delete your own comments", Toast.LENGTH_SHORT).show();
-        }
+        commentsRef.child(comment.getId()).removeValue().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(this, "Comment deleted", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to delete comment", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
-
-    private void loadComments() {
-        // Lấy dữ liệu bình luận từ Firebase và sắp xếp theo timestamp giảm dần
-        commentsRef.orderByChild("timestamp").limitToLast(50)  // Bạn có thể điều chỉnh số lượng bình luận tải về (50 ở đây là ví dụ)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        // Kiểm tra xem có dữ liệu mới không
-                        if (snapshot.exists()) {
-                            commentList.clear();
-                            for (DataSnapshot commentSnapshot : snapshot.getChildren()) {
-                                Comment comment = commentSnapshot.getValue(Comment.class);
-                                if (comment != null) {
-                                    commentList.add(comment);
-                                }
-                            }
-                            // Cập nhật danh sách bình luận
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(CommentActivity.this, "Failed to load comments", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
 }

@@ -12,7 +12,7 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 2; // Tăng version để kích hoạt `onUpgrade`
+    private static final int DATABASE_VERSION = 3; // Tăng version để kích hoạt `onUpgrade`
 
     // Bảng Users
     public static final String TABLE_USERS = "Users";

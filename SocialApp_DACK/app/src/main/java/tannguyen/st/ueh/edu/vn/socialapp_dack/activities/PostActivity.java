@@ -21,7 +21,7 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class PostActivity extends AppCompatActivity {
 
-    private EditText titleEditText, contentEditText;
+    private EditText titleEditText, contentEditText, imageUrlEditText;
     private TextView userTextView;
     private SQLiteHelper databaseHelper;
     private DatabaseReference firebaseDatabase;
@@ -34,6 +34,7 @@ public class PostActivity extends AppCompatActivity {
         // Khởi tạo các thành phần giao diện
         titleEditText = findViewById(R.id.editTextTitle);
         contentEditText = findViewById(R.id.editTextContent);
+        imageUrlEditText = findViewById(R.id.editTextImageUrl);
         userTextView = findViewById(R.id.textViewUser);
 
         databaseHelper = new SQLiteHelper(this);
@@ -78,7 +79,7 @@ public class PostActivity extends AppCompatActivity {
 
             String id = UUID.randomUUID().toString();
             long timestamp = System.currentTimeMillis();
-            String imageUrl = "";  // Nếu có URL ảnh thì cần thêm
+            String imageUrl = imageUrlEditText.getText().toString().trim();;  // Nếu có URL ảnh thì cần thêm
 
             // Tạo bài viết mới
             Post post = new Post(id, title, content, timestamp, imageUrl, userId, posterName);
