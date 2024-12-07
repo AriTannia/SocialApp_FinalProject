@@ -40,13 +40,19 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.ImageAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.PostAdapter;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.utils.ImageDownloader;
 
 public class ProfileFragment extends Fragment {
@@ -59,6 +65,11 @@ public class ProfileFragment extends Fragment {
     private FirebaseDatabase FB_database;
     private DatabaseReference databaseReference;
     private SQLiteHelper dbHelper;
+    private RecyclerView recyclerViewPosts;
+    private PostAdapter postAdapter;
+    private List<Post> postList;
+    private DatabaseReference postsRef;
+    private FirebaseUser currentUser;
 
     ProgressDialog pd;
 
@@ -78,6 +89,9 @@ public class ProfileFragment extends Fragment {
         fab = view.findViewById(R.id.fab);
         dbHelper = new SQLiteHelper(getContext());
 
+        recyclerViewPosts = view.findViewById(R.id.recycler_view_posts);
+        recyclerViewPosts.setLayoutManager(new LinearLayoutManager(getContext()));
+
         pd = new ProgressDialog(getActivity());
         pd.setMessage("Loading...");
         pd.setCancelable(false);
@@ -86,6 +100,19 @@ public class ProfileFragment extends Fragment {
         user = mAuth.getCurrentUser();
         FB_database = FirebaseDatabase.getInstance();
         databaseReference = FB_database.getReference("Users");
+
+        // Initialize post list and adapter
+        postList = new ArrayList<>();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = (currentUser != null) ? currentUser.getUid() : null;
+        postAdapter = new PostAdapter(getContext(), postList,userId);
+        recyclerViewPosts.setAdapter(postAdapter);
+
+        // Firebase reference
+        postsRef = FirebaseDatabase.getInstance().getReference("posts");
+
+        // Load posts
+        loadPosts();
 
         // Kiểm tra kết nối mạng
         if (isNetworkAvailable()) {
@@ -112,22 +139,23 @@ public class ProfileFragment extends Fragment {
                             tvPhone.setText(phone);
 
                             if (!TextUtils.isEmpty(image)) {
-                                Picasso.get().load(image).into(imgvAvatar);
                                 // Lưu ảnh đại diện vào bộ nhớ trong
                                 ImageAdapter.saveImageToInternalStorage(getContext(), uid, "image", image, new ImageAdapter.SaveImageCallback() {
                                     @Override
                                     public void onImageSaved(String filePath) {
                                         dbHelper.updateUserInfo(uid, "image", filePath);
                                         Log.d("ProfileFragment", "Profile image saved at: " + filePath);
+                                        Log.d("Picasso", "Image loaded successfully");
 
                                         // Cập nhật giao diện ảnh
-                                        requireActivity().runOnUiThread(() -> Picasso.get().load(filePath).into(imgvAvatar));
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(image).into(imgvAvatar));
                                     }
 
                                     @Override
                                     public void onError(Exception e) {
                                         Log.e("ProfileFragment", "Error saving profile image: ", e);
                                         requireActivity().runOnUiThread(() -> Picasso.get().load(R.drawable.error_image).into(imgvAvatar));
+                                        Log.e("Picasso", "Error loading image: " + e.getMessage());
                                     }
                                 });
                             } else {
@@ -135,7 +163,6 @@ public class ProfileFragment extends Fragment {
                             }
 
                             if (!TextUtils.isEmpty(coverImg)) {
-                                Picasso.get().load(coverImg).into(Coverimgv);
                                 // Lưu ảnh bìa vào bộ nhớ trong
                                 ImageAdapter.saveImageToInternalStorage(getContext(), uid, "cover", coverImg, new ImageAdapter.SaveImageCallback() {
                                     @Override
@@ -144,7 +171,7 @@ public class ProfileFragment extends Fragment {
                                         Log.d("ProfileFragment", "Cover image saved at: " + filePath);
 
                                         // Cập nhật giao diện ảnh bìa
-                                        requireActivity().runOnUiThread(() -> Picasso.get().load(filePath).into(Coverimgv));
+                                        requireActivity().runOnUiThread(() -> Picasso.get().load(coverImg).into(Coverimgv));
                                     }
 
                                     @Override
@@ -197,6 +224,27 @@ public class ProfileFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void loadPosts() {
+        postsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                postList.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Post post = dataSnapshot.getValue(Post.class);
+                    if (post.getUserId().equals(currentUser.getUid())) {
+                        postList.add(post);
+                    }
+                }
+                postAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Không thể tải bài viết.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // Hàm kiểm tra kết nối mạng

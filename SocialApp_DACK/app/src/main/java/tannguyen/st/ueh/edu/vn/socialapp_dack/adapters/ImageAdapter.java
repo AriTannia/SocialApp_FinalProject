@@ -24,11 +24,13 @@ public class ImageAdapter {
         ImageDownloader.downloadImage(context, imageUrl, fileName, new ImageDownloader.DownloadCallback() {
             @Override
             public void onSuccess(String filePath) {
+                // Trả về đường dẫn qua callback
                 callback.onImageSaved(filePath);
             }
 
             @Override
             public void onError(Exception e) {
+                // Trả về lỗi qua callback
                 callback.onError(e);
             }
         });

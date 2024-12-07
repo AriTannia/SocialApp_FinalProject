@@ -37,9 +37,18 @@
             android:name=".activities.ChatActivity"
             android:theme="@style/AppThemeNo"
             android:exported="false" />
+
+        <activity android:name=".activities.EditPostActivity">
+            <!-- Các cài đặt khác cho activity này, nếu có -->
+        </activity>
+
         <activity
             android:name=".activities.HomeActivity"
             android:exported="false" />
+        <activity android:name=".activities.CommentActivity">
+            <!-- Các cài đặt khác cho activity này, nếu có -->
+        </activity>
+        <activity android:name=".activities.PostDetailActivity" />
         <activity
             android:name=".activities.RegisterActivity"
             android:exported="false" />
@@ -48,6 +57,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

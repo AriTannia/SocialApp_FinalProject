@@ -7,11 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 2; // Tăng version để kích hoạt `onUpgrade`
+    private static final int DATABASE_VERSION = 3; // Tăng version để kích hoạt `onUpgrade`
 
     // Bảng Users
     public static final String TABLE_USERS = "Users";
@@ -171,6 +172,27 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public Cursor getAllUsers() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_USERS, null);
+    }
+
+    public void insertMessage(MessageModel message) {
+        SQLiteDatabase db = getWritableDb();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_MESSAGE_ID, message.getMessageId());
+        values.put(COLUMN_SENDER, message.getSender());
+        values.put(COLUMN_RECEIVER, message.getReceiver());
+        values.put(COLUMN_MESSAGE, message.getMessage());
+        values.put(COLUMN_MESSAGE_TIMESTAMP, message.getTimestamp());
+        values.put(COLUMN_IS_SEEN, message.isSeen() ? 1 : 0); // Chuyển đổi boolean sang int
+
+        db.insert(TABLE_MESSAGES, null, values);
+    }
+
+    public Cursor getMessages(String senderUid, String receiverUid) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + TABLE_MESSAGES +
+                        " WHERE (" + COLUMN_SENDER + "=? AND " + COLUMN_RECEIVER + "=?) OR " +
+                        "(" + COLUMN_SENDER + "=? AND " + COLUMN_RECEIVER + "=?)",
+                new String[]{senderUid, receiverUid, receiverUid, senderUid});
     }
 
     public void addPost(Post post) {
