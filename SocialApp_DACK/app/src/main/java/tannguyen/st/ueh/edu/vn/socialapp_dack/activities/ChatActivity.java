@@ -179,7 +179,7 @@ public class ChatActivity extends AppCompatActivity {
                         Picasso.get().load(image).placeholder(R.drawable.error_image).into(profileIv);
                     } else {
                         // Nếu không có ảnh, đặt ảnh mặc định
-                        profileIv.setImageResource(R.drawable.ic_default);
+                        profileIv.setImageResource(R.drawable.error_image);
                     }
                 } else {
                     Toast.makeText(ChatActivity.this, "Người dùng không tồn tại", Toast.LENGTH_SHORT).show();
