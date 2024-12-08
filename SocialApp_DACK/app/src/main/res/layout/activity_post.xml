@@ -14,8 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="#87A2FF"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        android:title="Create Post">
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
         <!-- Nút chỉnh sửa và xóa ở góc phải -->
         <LinearLayout
@@ -112,7 +111,7 @@
                 android:layout_gravity="center_horizontal"
                 android:backgroundTint="#87A2FF"
                 android:text="Post"
-                android:textColor="#000000" />
+                android:textColor="#FFFFFF" />
         </LinearLayout>
     </ScrollView>
 

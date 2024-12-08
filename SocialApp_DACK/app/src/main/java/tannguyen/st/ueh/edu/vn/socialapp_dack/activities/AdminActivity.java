@@ -226,12 +226,61 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     public void deleteUser(String userId) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users").child(userId);
-        ref.removeValue()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Xóa tài khoản thành công!", Toast.LENGTH_SHORT).show();
-                    loadUsers();
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi khi xóa tài khoản: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+        DatabaseReference postsRef = FirebaseDatabase.getInstance().getReference("posts");
+        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("comments");
+        DatabaseReference chatsRef = FirebaseDatabase.getInstance().getReference("Chats");
+
+        // Xóa User
+        usersRef.removeValue().addOnSuccessListener(aVoid -> {
+            // Xóa tất cả các bài đăng của User
+            postsRef.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        ds.getRef().removeValue(); // Xóa từng bài đăng
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(AdminActivity.this, "Lỗi khi xóa bài đăng: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            // Xóa tất cả bình luận của User
+            commentsRef.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        ds.getRef().removeValue(); // Xóa từng bình luận
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(AdminActivity.this, "Lỗi khi xóa bình luận: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            // Xóa tất cả tin nhắn của User
+            chatsRef.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        ds.getRef().removeValue(); // Xóa từng tin nhắn
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(AdminActivity.this, "Lỗi khi xóa tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            Toast.makeText(AdminActivity.this, "Xóa tài khoản và dữ liệu liên quan thành công!", Toast.LENGTH_SHORT).show();
+            loadUsers(); // Tải lại danh sách
+        }).addOnFailureListener(e -> Toast.makeText(AdminActivity.this, "Lỗi khi xóa tài khoản: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
 }
