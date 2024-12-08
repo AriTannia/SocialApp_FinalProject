@@ -98,23 +98,26 @@ public class ProfileFragment extends Fragment {
 
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
-        FB_database = FirebaseDatabase.getInstance();
-        databaseReference = FB_database.getReference("Users");
+        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
 
         // Initialize post list and adapter
         postList = new ArrayList<>();
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        String userId = (currentUser != null) ? currentUser.getUid() : null;
-        postAdapter = new PostAdapter(getContext(), postList,userId);
+        postAdapter = new PostAdapter(getContext(), postList, user.getUid());
         recyclerViewPosts.setAdapter(postAdapter);
 
-        // Firebase reference
+        // Firebase reference for posts
         postsRef = FirebaseDatabase.getInstance().getReference("posts");
 
-        // Load posts
-        loadPosts();
+        // Kiểm tra kết nối mạng và tải dữ liệu
+        checkNetworkAndLoadUserProfile();
 
-        // Kiểm tra kết nối mạng
+        // Thiết lập sự kiện click cho fab (nút chỉnh sửa hồ sơ)
+        fab.setOnClickListener(v -> showEditProfileDialogue());
+
+        return view;
+    }
+
+    private void checkNetworkAndLoadUserProfile() {
         if (isNetworkAvailable()) {
             pd.show(); // Hiển thị ProgressDialog
 
@@ -190,51 +193,37 @@ public class ProfileFragment extends Fragment {
                     } finally {
                         pd.dismiss(); // Đóng ProgressDialog dù có exception
                     }
-                }
 
+                    // Tải bài viết của người dùng từ Firebase
+                    loadPostsFromFirebase();
+                }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    try {
-                        // Xử lý lỗi Firebase
-                        Log.e("FirebaseError", "Error fetching data from Firebase: " + error.getMessage());
-                        Toast.makeText(getActivity(), "Firebase Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-
-                        // Nếu không có kết nối mạng, tải dữ liệu từ SQLite
-                        if (!isNetworkAvailable()) {
-                            loadFromSQLite();
-                        }
-                    } finally {
-                        pd.dismiss(); // Đóng ProgressDialog trong mọi trường hợp
-                    }
+                    pd.dismiss();
+                    Log.e("FirebaseError", "Error fetching data: " + error.getMessage());
+                    Toast.makeText(getActivity(), "Firebase Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    loadPostsFromSQLite();
                 }
             });
         } else {
             // Nếu không có mạng, tải dữ liệu từ SQLite
             loadFromSQLite();
+            loadPostsFromSQLite();
             pd.dismiss(); // Đóng ProgressDialog ngay lập tức vì không cần chờ
         }
-
-        // Thiết lập sự kiện click cho fab (nút chỉnh sửa hồ sơ)
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showEditProfileDialogue();
-            }
-        });
-
-        return view;
     }
 
-    private void loadPosts() {
-        postsRef.addValueEventListener(new ValueEventListener() {
+    private void loadPostsFromFirebase() {
+        postsRef.orderByChild("userId").equalTo(user.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 postList.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Post post = dataSnapshot.getValue(Post.class);
-                    if (post.getUserId().equals(currentUser.getUid())) {
+                    if (post != null) {
                         postList.add(post);
+                        dbHelper.insertOrUpdatePost(post); // Lưu vào SQLite
                     }
                 }
                 postAdapter.notifyDataSetChanged();
@@ -245,6 +234,30 @@ public class ProfileFragment extends Fragment {
                 Toast.makeText(getContext(), "Không thể tải bài viết.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadPostsFromSQLite() {
+        Cursor cursor = dbHelper.getPostsByUserId(user.getUid());
+        if (cursor != null && cursor.moveToFirst()) {
+            postList.clear();
+            do {
+                @SuppressLint("Range") Post post = new Post(
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_POST_ID)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_CONTENT)),
+                        cursor.getLong(cursor.getColumnIndex(SQLiteHelper.COLUMN_TIMESTAMP)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE_URL)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_USER_ID)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_POSTER_NAME))
+                );
+                postList.add(post);
+            } while (cursor.moveToNext());
+            cursor.close();
+        } else {
+            Log.w("SQLiteData", "No posts found for user: " + user.getUid());
+            Toast.makeText(getContext(), "Không có bài viết nào!", Toast.LENGTH_SHORT).show();
+        }
+        postAdapter.notifyDataSetChanged();
     }
 
     // Hàm kiểm tra kết nối mạng
@@ -293,6 +306,13 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    private void loadImage(ImageView imageView, String imageUrl) {
+        if (!TextUtils.isEmpty(imageUrl)) {
+            Picasso.get().load(imageUrl).into(imageView);
+        } else {
+            imageView.setImageResource(R.drawable.error_image);
+        }
+    }
 
     private void showEditProfileDialogue() {
         // Các tùy chọn
