@@ -195,6 +195,16 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 new String[]{senderUid, receiverUid, receiverUid, senderUid});
     }
 
+    public boolean isMessageExists(String messageId) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_MESSAGES, new String[]{COLUMN_MESSAGE_ID}, COLUMN_MESSAGE_ID + "=?",
+                new String[]{messageId}, null, null, null);
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        if (cursor != null) cursor.close();
+        return exists;
+    }
+
+
     public void addPost(Post post) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
