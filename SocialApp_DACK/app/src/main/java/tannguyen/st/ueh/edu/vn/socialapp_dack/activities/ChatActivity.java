@@ -1,5 +1,6 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
@@ -265,7 +266,7 @@ public class ChatActivity extends AppCompatActivity {
         if (cursor != null && cursor.moveToFirst()) {
             messageList.clear();
             do {
-                MessageModel message = new MessageModel(
+                @SuppressLint("Range") MessageModel message = new MessageModel(
                         cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE_ID)),
                         cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_SENDER)),
                         cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_RECEIVER)),
