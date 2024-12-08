@@ -182,16 +182,18 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     }
 
     public void insertMessage(MessageModel message) {
-        SQLiteDatabase db = getWritableDb();
+        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(COLUMN_SENDER, message.getSender());
         values.put(COLUMN_RECEIVER, message.getReceiver());
         values.put(COLUMN_MESSAGE, message.getMessage());
         values.put(COLUMN_MESSAGE_TIMESTAMP, message.getTimestamp());
-        values.put(COLUMN_IS_SEEN, message.isSeen() ? 1 : 0); // Chuyển đổi boolean sang int
+        values.put(COLUMN_IS_SEEN, message.isSeen() ? 1 : 0); // Convert boolean to int
 
+        // Chèn dữ liệu
         db.insert(TABLE_MESSAGES, null, values);
+        db.close();
     }
 
     public Cursor getMessages(String senderUid, String receiverUid) {

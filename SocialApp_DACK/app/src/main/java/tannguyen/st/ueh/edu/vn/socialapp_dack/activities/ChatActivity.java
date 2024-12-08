@@ -167,9 +167,6 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-
-
-
     private void loadReceiverInfo(String hisUid) {
         userRef.child(hisUid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -197,7 +194,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private void loadReceiverStatus(String hisUid) {
         DatabaseReference ref = userRef.child(hisUid);
@@ -281,27 +277,6 @@ public class ChatActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         chatRecyclerView.scrollToPosition(messageList.size() - 1);
     }
-
-    private void syncMessages() {
-        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    MessageModel message = ds.getValue(MessageModel.class);
-
-                    if (!dbHelper.isMessageExists(message.getMessageId())) {
-                        dbHelper.insertMessage(message); // Lưu tin nhắn mới vào SQLite
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ChatActivity.this, "Không thể đồng bộ tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
 
     private boolean isNetworkAvailable() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
