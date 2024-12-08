@@ -45,7 +45,6 @@ public class PostActivity extends AppCompatActivity {
         userTextView = findViewById(R.id.textViewUser);
         imagePreview = findViewById(R.id.imagePreview);
 
-        databaseHelper = new SQLiteHelper(this);
         firebaseDatabase = FirebaseDatabase.getInstance().getReference("posts");
 
         // Kiểm tra xem người dùng đã đăng nhập chưa
@@ -112,9 +111,6 @@ public class PostActivity extends AppCompatActivity {
 
             // Tạo bài viết mới
             Post post = new Post(id, title, content, timestamp, imageUrl, userId, posterName);
-
-            // Lưu bài viết vào SQLite
-            databaseHelper.addPost(post);
 
             // Lưu bài viết vào Firebase
             firebaseDatabase.child(id).setValue(post).addOnCompleteListener(task -> {

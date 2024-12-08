@@ -1,5 +1,10 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -31,6 +36,7 @@ import java.util.List;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.MessageAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.MessageModel;
 
 public class ChatActivity extends AppCompatActivity {
@@ -53,6 +59,8 @@ public class ChatActivity extends AppCompatActivity {
     // Adapter and message list
     MessageAdapter adapter;
     List<MessageModel> messageList;
+
+    private SQLiteHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +110,14 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        dbHelper = new SQLiteHelper(this);
+
         // Load chat messages
-        loadMessages();
+        if (isNetworkAvailable()) {
+            loadMessages();
+        } else {
+            loadMessagesOffline();
+        }
         markMessagesAsSeen(hisUid);
     }
 
@@ -153,9 +167,6 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-
-
-
     private void loadReceiverInfo(String hisUid) {
         userRef.child(hisUid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -183,7 +194,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private void loadReceiverStatus(String hisUid) {
         DatabaseReference ref = userRef.child(hisUid);
@@ -231,6 +241,9 @@ public class ChatActivity extends AppCompatActivity {
                     if ((message.getSender().equals(myUid) && message.getReceiver().equals(hisUid)) ||
                             (message.getSender().equals(hisUid) && message.getReceiver().equals(myUid))) {
                         messageList.add(message);
+
+                        // Lưu tin nhắn vào SQLite
+                        dbHelper.insertMessage(message);
                     }
                 }
                 adapter.notifyDataSetChanged();
@@ -242,6 +255,33 @@ public class ChatActivity extends AppCompatActivity {
                 Toast.makeText(ChatActivity.this, "Không thể tải tin nhắn: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadMessagesOffline() {
+        Cursor cursor = dbHelper.getMessages(myUid, hisUid);
+        if (cursor != null && cursor.moveToFirst()) {
+            messageList.clear();
+            do {
+                @SuppressLint("Range") MessageModel message = new MessageModel(
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE_ID)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_SENDER)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_RECEIVER)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE)),
+                        cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_MESSAGE_TIMESTAMP)),
+                        cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_IS_SEEN)) == 1
+                );
+                messageList.add(message);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        adapter.notifyDataSetChanged();
+        chatRecyclerView.scrollToPosition(messageList.size() - 1);
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
     private void markMessagesAsSeen(String hisUid) {

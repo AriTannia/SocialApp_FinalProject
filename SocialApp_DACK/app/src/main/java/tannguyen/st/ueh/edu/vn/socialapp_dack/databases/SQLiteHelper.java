@@ -12,7 +12,7 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "UserProfileDB";
-    private static final int DATABASE_VERSION = 3; // Tăng version để kích hoạt `onUpgrade`
+    private static final int DATABASE_VERSION = 4; // Tăng version để kích hoạt `onUpgrade`
 
     // Bảng Users
     public static final String TABLE_USERS = "Users";
@@ -24,11 +24,14 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_COVER = "cover";
 
     // Bảng Posts
-    private static final String TABLE_POSTS = "posts";
-    private static final String COLUMN_POST_ID = "post_id"; // Cột mới
-    private static final String COLUMN_TITLE = "title";
-    private static final String COLUMN_CONTENT = "content";
-    private static final String COLUMN_TIMESTAMP = "timestamp";
+    public static final String TABLE_POSTS = "posts";
+    public static final String COLUMN_POST_ID = "post_id";
+    public static final String COLUMN_TITLE = "title";
+    public static final String COLUMN_CONTENT = "content";
+    public static final String COLUMN_TIMESTAMP = "timestamp";
+    public static final String COLUMN_IMAGE_URL = "image_url";
+    public static final String COLUMN_USER_ID = "user_id";
+    public static final String COLUMN_POSTER_NAME = "poster_name";
 
     // Bảng Messages
     public static final String TABLE_MESSAGES = "Messages";
@@ -62,7 +65,11 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 COLUMN_POST_ID + " TEXT PRIMARY KEY, " +
                 COLUMN_TITLE + " TEXT, " +
                 COLUMN_CONTENT + " TEXT, " +
-                COLUMN_TIMESTAMP + " TEXT)";
+                COLUMN_TIMESTAMP + " INTEGER, " +
+                COLUMN_IMAGE_URL + " TEXT, " +
+                COLUMN_USER_ID + " TEXT, " +
+                COLUMN_POSTER_NAME + " TEXT" +
+                ")";
         db.execSQL(createPostsTable);
 
         // Tạo bảng Messages
@@ -175,16 +182,18 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     }
 
     public void insertMessage(MessageModel message) {
-        SQLiteDatabase db = getWritableDb();
+        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_MESSAGE_ID, message.getMessageId());
         values.put(COLUMN_SENDER, message.getSender());
         values.put(COLUMN_RECEIVER, message.getReceiver());
         values.put(COLUMN_MESSAGE, message.getMessage());
         values.put(COLUMN_MESSAGE_TIMESTAMP, message.getTimestamp());
-        values.put(COLUMN_IS_SEEN, message.isSeen() ? 1 : 0); // Chuyển đổi boolean sang int
+        values.put(COLUMN_IS_SEEN, message.isSeen() ? 1 : 0); // Convert boolean to int
 
+        // Chèn dữ liệu
         db.insert(TABLE_MESSAGES, null, values);
+        db.close();
     }
 
     public Cursor getMessages(String senderUid, String receiverUid) {
@@ -195,14 +204,62 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                 new String[]{senderUid, receiverUid, receiverUid, senderUid});
     }
 
-    public void addPost(Post post) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public boolean isMessageExists(String messageId) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_MESSAGES, new String[]{COLUMN_MESSAGE_ID}, COLUMN_MESSAGE_ID + "=?",
+                new String[]{messageId}, null, null, null);
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        if (cursor != null) cursor.close();
+        return exists;
+    }
+
+    public Cursor getAllPosts() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + TABLE_POSTS, null);
+    }
+
+    // Phương thức thêm hoặc cập nhật bài viết
+    public void insertOrUpdatePost(Post post) {
+        SQLiteDatabase db = getWritableDb();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_UID, post.getId());
+        values.put(COLUMN_POST_ID, post.getId());
         values.put(COLUMN_TITLE, post.getTitle());
         values.put(COLUMN_CONTENT, post.getContent());
         values.put(COLUMN_TIMESTAMP, post.getTimestamp());
-        db.insert(TABLE_POSTS, null, values);
-        db.close();
+        values.put(COLUMN_IMAGE_URL, post.getImageUrl()); // Thêm đường dẫn hình ảnh
+        values.put(COLUMN_USER_ID, post.getUserId()); // Thêm UID người đăng
+        values.put(COLUMN_POSTER_NAME, post.getPosterName()); // Thêm tên người đăng
+
+        if (isPostExists(post.getId())) {
+            db.update(TABLE_POSTS, values, COLUMN_POST_ID + "=?", new String[]{post.getId()});
+        } else {
+            db.insert(TABLE_POSTS, null, values);
+        }
+    }
+
+    // Kiểm tra bài viết đã tồn tại
+    public boolean isPostExists(String postId) {
+        SQLiteDatabase db = getWritableDb();
+        Cursor cursor = db.query(
+                TABLE_POSTS,
+                new String[]{COLUMN_POST_ID},
+                COLUMN_POST_ID + "=?",
+                new String[]{postId},
+                null, null, null
+        );
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        if (cursor != null) {
+            cursor.close();
+        }
+        return exists;
+    }
+
+    // Phương thức để lấy bài viết của người dùng theo UID
+    public Cursor getPostsByUserId(String userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Truy vấn lấy bài viết của người dùng
+        String query = "SELECT * FROM " + TABLE_POSTS + " WHERE " + COLUMN_USER_ID + " = ?";
+        return db.rawQuery(query, new String[]{userId});
     }
 }
