@@ -85,14 +85,14 @@ public class UsersFragment extends Fragment {
 
                     if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
                         String imageUrl = user.getImage();
-                        String coverUrl = user.getCoverIv();
+                        String coverUrl = user.getcover();
 
                         // Lưu ảnh profile
                         if (!TextUtils.isEmpty(imageUrl)) {
                             ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", imageUrl, new ImageAdapter.SaveImageCallback() {
                                 @Override
                                 public void onImageSaved(String filePath) {
-                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), filePath, user.getCoverIv());
+                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), filePath, user.getcover());
                                     Log.d("Firebase-SQLite", "Saved profile image path to SQLite: " + filePath);
                                 }
 

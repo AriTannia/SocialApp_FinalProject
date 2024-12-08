@@ -1,8 +1,12 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,6 +16,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
+import androidx.appcompat.widget.Toolbar;
 
 import java.util.UUID;
 
@@ -23,6 +29,7 @@ public class PostActivity extends AppCompatActivity {
 
     private EditText titleEditText, contentEditText, imageUrlEditText;
     private TextView userTextView;
+    private ImageView imagePreview;
     private SQLiteHelper databaseHelper;
     private DatabaseReference firebaseDatabase;
 
@@ -36,6 +43,7 @@ public class PostActivity extends AppCompatActivity {
         contentEditText = findViewById(R.id.editTextContent);
         imageUrlEditText = findViewById(R.id.editTextImageUrl);
         userTextView = findViewById(R.id.textViewUser);
+        imagePreview = findViewById(R.id.imagePreview);
 
         databaseHelper = new SQLiteHelper(this);
         firebaseDatabase = FirebaseDatabase.getInstance().getReference("posts");
@@ -56,6 +64,27 @@ public class PostActivity extends AppCompatActivity {
 
         // Xử lý khi người dùng nhấn nút đăng bài
         findViewById(R.id.buttonPost).setOnClickListener(v -> createPost());
+
+        // Xử lý khi người dùng nhập URL ảnh
+        imageUrlEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String imageUrl = imageUrlEditText.getText().toString();
+                if (!TextUtils.isEmpty(imageUrl)) {
+                    Picasso.get().load(imageUrl).into(imagePreview);
+                    imagePreview.setVisibility(View.VISIBLE);
+                } else {
+                    imagePreview.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        // Xử lý nút back trong Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        toolbar.setNavigationOnClickListener(v -> navigateToHomeActivity());
+
     }
 
 
@@ -91,11 +120,33 @@ public class PostActivity extends AppCompatActivity {
             firebaseDatabase.child(id).setValue(post).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Toast.makeText(this, "Đăng bài thành công.", Toast.LENGTH_SHORT).show();
+                    navigateToHomeActivity();
                     finish();  // Quay lại màn hình chính sau khi đăng bài
                 } else {
                     Toast.makeText(this, "Đăng bài thất bại.", Toast.LENGTH_SHORT).show();
                 }
             });
         }
+    }
+
+    private void navigateToHomeActivity() {
+        Intent intent = new Intent(PostActivity.this, HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        navigateToHomeActivity();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            navigateToHomeActivity();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

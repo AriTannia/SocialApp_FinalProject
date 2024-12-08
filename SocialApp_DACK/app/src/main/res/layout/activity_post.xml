@@ -12,7 +12,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="#87A2FF"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:title="Create Post">
@@ -64,18 +64,18 @@
                 android:id="@+id/editTextTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:hint="Title"
-                android:inputType="text"
-                android:layout_marginBottom="8dp" />
+                android:inputType="text" />
 
             <!-- Content -->
             <EditText
                 android:id="@+id/editTextContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:hint="Content"
                 android:inputType="textMultiLine"
-                android:layout_marginBottom="8dp"
                 android:minHeight="100dp" />
 
             <!-- Image URL -->
@@ -83,9 +83,9 @@
                 android:id="@+id/editTextImageUrl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:hint="Image URL (optional)"
-                android:inputType="textUri"
-                android:layout_marginBottom="8dp" />
+                android:inputType="textUri" />
 
             <!-- Display Image Preview -->
             <ImageView
@@ -101,16 +101,18 @@
                 android:id="@+id/textViewUser"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Posted by: User"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                android:text="Posted by: User" />
 
             <!-- Post Button -->
             <Button
                 android:id="@+id/buttonPost"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:backgroundTint="#87A2FF"
                 android:text="Post"
-                android:layout_gravity="center_horizontal" />
+                android:textColor="#000000" />
         </LinearLayout>
     </ScrollView>
 

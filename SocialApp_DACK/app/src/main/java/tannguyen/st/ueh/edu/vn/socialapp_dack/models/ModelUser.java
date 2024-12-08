@@ -73,11 +73,11 @@ public class ModelUser {
         this.uid = uid;
     }
 
-    public String getCoverIv() {
+    public String getcover() {
         return cover;
     }
 
-    public void setCoverIv(String coverIv) {
-        this.cover = coverIv;
+    public void setcover(String cover) {
+        this.cover = cover;
     }
 }
