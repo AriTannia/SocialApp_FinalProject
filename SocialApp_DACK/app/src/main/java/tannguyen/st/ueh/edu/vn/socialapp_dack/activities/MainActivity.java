@@ -126,11 +126,21 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-            startActivity(intent);
-            finish();
+            String currentEmail = currentUser.getEmail();
+            if (currentEmail != null && currentEmail.equals("admin@gmail.com")) {
+                // Nếu người dùng là admin, chuyển đến AdminActivity
+                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // Nếu người dùng không phải admin, chuyển đến HomeActivity
+                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
         }
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

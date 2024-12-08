@@ -40,7 +40,6 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:background="#9C27B0"
-                    android:padding="8dp"
                     android:src="@drawable/baseline_add_a_photo_24" />
 
                 <LinearLayout

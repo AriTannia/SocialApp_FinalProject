@@ -15,7 +15,7 @@
     <item
         android:id="@+id/action_other_users"
         android:icon="@drawable/ic_chat"
-        android:title="Bạn Bè"
+        android:title="Trò Chuyện"
         app:showAsAction="ifRoom" />
 
     <item

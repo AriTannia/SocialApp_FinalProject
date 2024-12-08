@@ -17,18 +17,20 @@ import java.util.List;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.AdminActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.fragments.ManageUsers;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.AdminUserViewHolder> {
 
     private Context context;
     private List<ModelUser> userList;
-    private AdminActivity adminActivity;
+    private ManageUsers manageUsersFragment; // Thay vì AdminActivity, truyền fragment
 
-    public AdapterAdminUser(Context context, List<ModelUser> userList, AdminActivity adminActivity) {
+    // Sửa constructor để nhận ManageUsers (Fragment)
+    public AdapterAdminUser(Context context, List<ModelUser> userList, ManageUsers manageUsersFragment) {
         this.context = context;
         this.userList = userList;
-        this.adminActivity = adminActivity;
+        this.manageUsersFragment = manageUsersFragment;
     }
 
     @NonNull
@@ -58,12 +60,16 @@ public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.Admi
 
         // Xóa người dùng
         holder.deleteBtn.setOnClickListener(v -> {
-            adminActivity.deleteUser(user.getUid());
+            if (manageUsersFragment != null) {
+                manageUsersFragment.deleteUser(user.getUid());
+            }
         });
 
         // Sửa thông tin người dùng
         holder.editBtn.setOnClickListener(v -> {
-            adminActivity.editUser(user);
+            if (manageUsersFragment != null) {
+                manageUsersFragment.editUser(user);
+            }
         });
     }
 
@@ -75,7 +81,7 @@ public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.Admi
     static class AdminUserViewHolder extends RecyclerView.ViewHolder {
 
         TextView nameTv, emailTv;
-        ImageView avatarCiv; // Thêm ImageView để hiển thị avatar
+        ImageView avatarCiv;
         Button editBtn, deleteBtn;
 
         public AdminUserViewHolder(@NonNull View itemView) {
@@ -89,3 +95,4 @@ public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.Admi
         }
     }
 }
+
