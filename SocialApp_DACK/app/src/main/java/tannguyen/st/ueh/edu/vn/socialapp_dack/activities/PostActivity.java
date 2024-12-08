@@ -31,6 +31,8 @@ public class PostActivity extends AppCompatActivity {
     private TextView userTextView;
     private ImageView imagePreview;
     private SQLiteHelper databaseHelper;
+    private FirebaseUser currentUser;
+    private FirebaseAuth mAuth;
     private DatabaseReference firebaseDatabase;
 
     @Override
@@ -45,10 +47,13 @@ public class PostActivity extends AppCompatActivity {
         userTextView = findViewById(R.id.textViewUser);
         imagePreview = findViewById(R.id.imagePreview);
 
+        // Khởi tạo FirebaseAuth
+        mAuth = FirebaseAuth.getInstance();
+
         firebaseDatabase = FirebaseDatabase.getInstance().getReference("posts");
 
         // Kiểm tra xem người dùng đã đăng nhập chưa
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String posterName = currentUser.getDisplayName();  // Lấy tên người dùng từ Firebase
             if (posterName == null || posterName.isEmpty()) {
@@ -82,7 +87,24 @@ public class PostActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        toolbar.setNavigationOnClickListener(v -> navigateToHomeActivity());
+        toolbar.setNavigationOnClickListener(v -> {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser != null) {
+                String currentEmail = currentUser.getEmail();
+                if (currentEmail != null && currentEmail.equals("admin@gmail.com")) {
+                    // Nếu người dùng là admin, chuyển đến AdminActivity
+                    Intent intent = new Intent(PostActivity.this, AdminActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    navigateToHomeActivity();
+                }
+            } else {
+                // Trường hợp không có người dùng đăng nhập (nếu cần thiết)
+                Toast.makeText(PostActivity.this, "No user logged in", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
     }
 
@@ -97,7 +119,6 @@ public class PostActivity extends AppCompatActivity {
             return;
         }
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
             String posterName = currentUser.getDisplayName();

@@ -38,6 +38,7 @@ public class CommentActivity extends AppCompatActivity {
     private ImageView backButton;
     private List<Comment> commentList;
     private DatabaseReference commentsRef;
+    private FirebaseAuth mAuth;
     private String currentPostId;
 
     @Override
@@ -46,6 +47,9 @@ public class CommentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_comment);
 
         backButton = findViewById(R.id.backButton);
+
+        // Khởi tạo FirebaseAuth
+        mAuth = FirebaseAuth.getInstance();
 
         // Khởi tạo các thành phần giao diện
         recyclerViewComments = findViewById(R.id.recyclerViewComments);
@@ -91,11 +95,27 @@ public class CommentActivity extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(CommentActivity.this, HomeActivity.class);
-                startActivity(intent);
-                finish();
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                if (currentUser != null) {
+                    String currentEmail = currentUser.getEmail();
+                    if (currentEmail != null && currentEmail.equals("admin@gmail.com")) {
+                        // Nếu người dùng là admin, chuyển đến AdminActivity
+                        Intent intent = new Intent(CommentActivity.this, AdminActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        // Nếu người dùng không phải admin, chuyển đến HomeActivity
+                        Intent intent = new Intent(CommentActivity.this, HomeActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                } else {
+                    // Trường hợp không có người dùng đăng nhập
+                    Toast.makeText(CommentActivity.this, "No user logged in", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+
     }
     private void editComment(Comment comment) {
         // Hiển thị hộp thoại để chỉnh sửa bình luận
