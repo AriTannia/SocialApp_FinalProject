@@ -77,7 +77,7 @@ public class ModelUser {
         return cover;
     }
 
-    public void setCoverIv(String coverIv) {
-        this.cover = coverIv;
+    public void setCoverIv(String cover) {
+        this.cover = cover;
     }
 }
