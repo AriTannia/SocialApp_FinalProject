@@ -159,12 +159,64 @@ public class ManageUsers extends Fragment {
     }
 
     public void deleteUser(String userId) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
         DatabaseReference postsRef = FirebaseDatabase.getInstance().getReference("posts");
         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("comments");
         DatabaseReference chatsRef = FirebaseDatabase.getInstance().getReference("Chats");
 
-        // Xóa User
+        // Tra cứu email và password từ userId
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String userEmail = snapshot.child("email").getValue(String.class);
+                    String userPassword = snapshot.child("password").getValue(String.class);
+
+                    if (userEmail != null && userPassword != null) {
+                        // Đăng nhập tạm thời với email và password
+                        auth.signInWithEmailAndPassword(userEmail, userPassword)
+                                .addOnSuccessListener(authResult -> {
+                                    FirebaseUser currentUser = auth.getCurrentUser();
+                                    if (currentUser != null && currentUser.getUid().equals(userId)) {
+                                        // Xóa tài khoản khỏi Authentication
+                                        currentUser.delete()
+                                                .addOnSuccessListener(aVoid -> {
+                                                    // Sau khi xóa tài khoản Authentication, xóa dữ liệu trong Realtime Database
+                                                    deleteUserDataFromDatabase(userId, usersRef, postsRef, commentsRef, chatsRef);
+
+                                                    // Đăng nhập lại tài khoản admin
+                                                    reLoginAsAdmin();
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(getContext(), "Lỗi khi xóa tài khoản Authentication: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                    reLoginAsAdmin(); // Dù lỗi, vẫn đăng nhập lại admin
+                                                });
+                                    } else {
+                                        Toast.makeText(getContext(), "Người dùng không hợp lệ!", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(getContext(), "Lỗi khi đăng nhập tài khoản: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        Toast.makeText(getContext(), "Không tìm thấy email hoặc password của người dùng!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Không tìm thấy người dùng với userId này!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Lỗi khi truy vấn dữ liệu: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // Hàm phụ để xóa dữ liệu trong Realtime Database
+    private void deleteUserDataFromDatabase(String userId, DatabaseReference usersRef, DatabaseReference postsRef, DatabaseReference commentsRef, DatabaseReference chatsRef) {
+        // Xóa User từ "Users" nhánh
         usersRef.removeValue()
                 .addOnSuccessListener(aVoid -> {
                     // Xóa tất cả các bài đăng của User
@@ -212,12 +264,28 @@ public class ManageUsers extends Fragment {
                         }
                     });
 
-                    // Thông báo và tải lại danh sách
-                    Toast.makeText(getContext(), "Xóa tài khoản và dữ liệu liên quan thành công!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Đã xóa tài khoản và dữ liệu liên quan thành công!", Toast.LENGTH_SHORT).show();
                     loadUsers(); // Tải lại danh sách người dùng
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Lỗi khi xóa tài khoản: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Lỗi khi xóa dữ liệu Realtime Database: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
+    // Hàm đăng nhập lại với tài khoản admin
+    private void reLoginAsAdmin() {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        String adminEmail = "admin@gmail.com"; // Thay bằng email admin thực tế
+        String adminPassword = "admin1"; // Thay bằng password admin thực tế
+
+        auth.signInWithEmailAndPassword(adminEmail, adminPassword)
+                .addOnSuccessListener(authResult -> Toast.makeText(getContext(), "Đã đăng nhập lại tài khoản admin thành công!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Lỗi khi đăng nhập lại tài khoản admin: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+
+
 
     private void addUserToFirebase(String name, String email, String password) {
         String userId = FirebaseDatabase.getInstance().getReference("Users").push().getKey();
