@@ -1,8 +1,15 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.fragments;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +40,8 @@ import java.util.List;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.activities.AdminProfileActivity;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.AdapterAdminUser;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.ImageAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.ModelUser;
 
 public class ManageUsers extends Fragment {
@@ -41,6 +50,7 @@ public class ManageUsers extends Fragment {
     private Button btnAddUser;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
+    private SQLiteHelper dbHelper;
 
     public ManageUsers() {
         // Required empty public constructor
@@ -59,7 +69,6 @@ public class ManageUsers extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
-        user = mAuth.getCurrentUser();
     }
 
     @Override
@@ -75,7 +84,11 @@ public class ManageUsers extends Fragment {
         btnAddUser.setOnClickListener(v -> showAddUserDialog());
 
         // Tải danh sách người dùng
-        loadUsers();
+        if (isNetworkAvailable()) {
+            loadUsersFromFirebase();
+        } else {
+            loadUsersFromSQLite();
+        }
 
         return view;
     }
@@ -150,7 +163,7 @@ public class ManageUsers extends Fragment {
             ref.child("email").setValue(updatedEmail)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                        loadUsers(); // Tải lại danh sách người dùng
+                        loadUsersFromFirebase(); // Tải lại danh sách người dùng
                     });
         });
 
@@ -265,7 +278,7 @@ public class ManageUsers extends Fragment {
                     });
 
                     Toast.makeText(getContext(), "Đã xóa tài khoản và dữ liệu liên quan thành công!", Toast.LENGTH_SHORT).show();
-                    loadUsers(); // Tải lại danh sách người dùng
+                    loadUsersFromFirebase(); // Tải lại danh sách người dùng
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Lỗi khi xóa dữ liệu Realtime Database: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -284,9 +297,6 @@ public class ManageUsers extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Lỗi khi đăng nhập lại tài khoản admin: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-
-
-
     private void addUserToFirebase(String name, String email, String password) {
         String userId = FirebaseDatabase.getInstance().getReference("Users").push().getKey();
         if (userId != null) {
@@ -295,33 +305,112 @@ public class ManageUsers extends Fragment {
             ref.setValue(newUser)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(getActivity(), "Thêm tài khoản thành công!", Toast.LENGTH_SHORT).show();
-                        loadUsers();
+                        loadUsersFromFirebase();
                     })
                     .addOnFailureListener(e -> Toast.makeText(getActivity(), "Lỗi khi thêm tài khoản: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         }
     }
 
-    private void loadUsers() {
+    private void loadUsersFromFirebase() {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                SQLiteHelper dbHelper = new SQLiteHelper(requireContext());
                 List<ModelUser> userList = new ArrayList<>();
+
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ModelUser user = ds.getValue(ModelUser.class);
+
                     if (user != null && !user.getEmail().equalsIgnoreCase("admin@gmail.com")) {
+                        Log.d("Firebase-User", "Loaded user: " + user.getName() + ", Email: " + user.getEmail());
+
                         userList.add(user);
+
+                        // Lưu ảnh đại diện
+                        if (!TextUtils.isEmpty(user.getImage())) {
+                            Log.d("Firebase-Image", "Processing profile image: " + user.getImage());
+                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", user.getImage(), new ImageAdapter.SaveImageCallback() {
+                                @Override
+                                public void onImageSaved(String filePath) {
+                                    Log.d("Image-Save", "Saved profile image path: " + filePath);
+                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), filePath, user.getcover());
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    Log.e("Image-Save", "Error saving profile image", e);
+                                }
+                            });
+                        }
+
+                        // Lưu ảnh bìa
+                        if (!TextUtils.isEmpty(user.getcover())) {
+                            Log.d("Firebase-Cover", "Processing cover image: " + user.getcover());
+                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "cover", user.getcover(), new ImageAdapter.SaveImageCallback() {
+                                @Override
+                                public void onImageSaved(String filePath) {
+                                    Log.d("Image-Save", "Saved cover image path: " + filePath);
+                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), user.getImage(), filePath);
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    Log.e("Image-Save", "Error saving cover image", e);
+                                }
+                            });
+                        }
                     }
                 }
-                // Thiết lập adapter cho RecyclerView
+
                 AdapterAdminUser adapter = new AdapterAdminUser(getActivity(), userList, ManageUsers.this);
                 recyclerViewUsers.setAdapter(adapter);
+                Log.d("User-List", "Number of users loaded: " + userList.size());
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(getActivity(), "Lỗi tải danh sách: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Firebase-Error", "Error loading user list: ", error.toException());
             }
         });
+    }
+
+
+    @SuppressLint("Range")
+    private void loadUsersFromSQLite() {
+        SQLiteHelper dbHelper = new SQLiteHelper(getContext());
+        Cursor cursor = dbHelper.getAllUsers();
+        List<ModelUser> userList = new ArrayList<>();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String uid = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_UID));
+                String name = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_NAME));
+                String email = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_EMAIL));
+                String phone = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_PHONE));
+                String imagePath = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_IMAGE));
+                String coverPath = cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_COVER));
+
+                ModelUser user = new ModelUser(name, email, null, phone, imagePath, uid, coverPath);
+                userList.add(user);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        // Hiển thị danh sách người dùng
+        AdapterAdminUser adapter = new AdapterAdminUser(getActivity(), userList, ManageUsers.this);
+        recyclerViewUsers.setAdapter(adapter);
+    }
+
+    // Kiểm tra trạng thái mạng
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            Network network = cm.getActiveNetwork();
+            return network != null;
+        }
+        return false;
     }
 }

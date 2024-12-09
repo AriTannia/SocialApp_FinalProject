@@ -1,6 +1,11 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.adapters;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.Uri;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,15 +52,23 @@ public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.Admi
         holder.nameTv.setText(user.getName());
         holder.emailTv.setText(user.getEmail());
 
-        // Hiển thị ảnh đại diện
-        try {
-            Picasso.get()
-                    .load(user.getImage()) // Lấy URL ảnh từ ModelUser
-                    .placeholder(R.drawable.error_image) // Ảnh mặc định nếu không tải được
-                    .error(R.drawable.error_image) // Ảnh hiển thị khi có lỗi
-                    .into(holder.avatarCiv); // Đặt ảnh vào ImageView
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (isOnline()) {
+            // Online - Load image from URL using Picasso
+            try {
+                Picasso.get()
+                        .load(user.getImage())
+                        .placeholder(R.drawable.error_image)
+                        .into(holder.avatarCiv);
+            } catch (Exception e) {
+                Log.e("PicassoError", "Error loading image online", e);
+            }
+        } else {
+            // Offline - Use local URI or placeholder
+            if (!TextUtils.isEmpty(user.getImage())) {
+                holder.avatarCiv.setImageURI(Uri.parse(user.getImage()));
+            } else {
+                holder.avatarCiv.setImageResource(R.drawable.error_image);
+            }
         }
 
         // Xóa người dùng
@@ -71,6 +84,16 @@ public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.Admi
                 manageUsersFragment.editUser(user);
             }
         });
+    }
+
+    // Kiểm tra trạng thái mạng
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            Network network = cm.getActiveNetwork();
+            return network != null;
+        }
+        return false;
     }
 
     @Override
