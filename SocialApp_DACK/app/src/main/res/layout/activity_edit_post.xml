@@ -1,32 +1,85 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:fitsSystemWindows="true"
+    android:background="@color/white">
 
-    <EditText
-        android:id="@+id/editPostTitle"
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#87A2FF"
+        app:title="Edit Post"
+        app:titleTextColor="@android:color/white"
+        android:layout_gravity="top"
+        android:elevation="4dp" />
+
+    <!-- Nội dung còn lại -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Title"
-        android:textSize="18sp"
-        android:padding="10dp"
-        android:inputType="text" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <EditText
-        android:id="@+id/editPostContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Content"
-        android:textSize="16sp"
-        android:padding="10dp"
-        android:inputType="textMultiLine" />
+        <!-- Image View -->
+        <ImageView
+            android:id="@+id/editPostImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="12dp"
+            android:background="#87A2FF"
+            android:contentDescription="Post Image" />
 
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save Changes"
-        android:layout_gravity="center" />
+        <!-- Image URL EditText -->
+        <EditText
+            android:id="@+id/editImageUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter image URL..."
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_edittext_background"
+            android:layout_marginBottom="16dp"
+            android:inputType="textUri" />
+
+        <!-- Title EditText -->
+        <EditText
+            android:id="@+id/editPostTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Add a title..."
+            android:textSize="18sp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_edittext_background"
+            android:layout_marginBottom="12dp"
+            android:inputType="text" />
+
+        <!-- Content EditText -->
+        <EditText
+            android:id="@+id/editPostContent"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:hint="What's on your mind?"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_edittext_background"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Save Changes Button -->
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Changes"
+            android:backgroundTint="#87A2FF"
+            android:textColor="@color/white"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
 
 </LinearLayout>

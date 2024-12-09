@@ -2,41 +2,116 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="8dp">
 
-        <!-- Thông tin bài viết -->
+        <!-- Phần thông tin người đăng và ảnh bài viết -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+
+            <!-- Avatar người đăng -->
+            <ImageView
+                android:id="@+id/postAuthorAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_user_placeholder"
+                android:scaleType="centerCrop"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/circle_background" />
+
+            <!-- Tên người đăng và thời gian -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/postAuthorName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Author Name"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/postTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10 mins ago"
+                    android:textSize="12sp"
+                    android:textColor="#87A2FF" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Ảnh bài viết -->
+        <ImageView
+            android:id="@+id/postImageView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="8dp"
+            android:background="#87A2FF"
+            android:contentDescription="Post Image" />
+
+        <!-- Tiêu đề bài viết -->
         <TextView
             android:id="@+id/textViewPostTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Post Title"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:paddingBottom="8dp" />
+            android:textColor="@color/black"
+            android:paddingBottom="4dp" />
 
+        <!-- Nội dung bài viết -->
         <TextView
             android:id="@+id/textViewPostContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Post Content"
             android:textSize="16sp"
+            android:textColor="@color/black"
             android:paddingBottom="8dp" />
 
+        <!-- Tác giả -->
         <TextView
             android:id="@+id/textViewPostAuthor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Posted by: Author"
             android:textSize="14sp"
+            android:textColor="#000000"
             android:paddingBottom="16dp" />
 
-        <!-- Danh sách bình luận -->
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#87A2FF"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Phần bình luận -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Comments"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/black" />
+
+        <!-- RecyclerView bình luận -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewPostComments"
             android:layout_width="match_parent"
@@ -44,13 +119,23 @@
             android:nestedScrollingEnabled="false"
             android:scrollbars="vertical" />
 
-        <!-- Nhập bình luận mới -->
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#87A2FF"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Nhập bình luận -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingTop="8dp">
+            android:padding="8dp"
+            android:background="#FFFFFF">
 
+            <!-- Input bình luận -->
             <EditText
                 android:id="@+id/editTextComment"
                 android:layout_width="0dp"
@@ -58,16 +143,18 @@
                 android:layout_weight="1"
                 android:hint="Write a comment..."
                 android:padding="8dp"
-                android:background="@drawable/edit_text_background" />
+                android:background="@drawable/edit_text_background"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp" />
 
+            <!-- Nút gửi -->
             <Button
                 android:id="@+id/buttonSendComment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="Send"
-                android:background="@color/design_default_color_primary"
-                android:textColor="#FFFFFF" />
+                android:background="#87A2FF"
+                android:textColor="@color/white" />
         </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
