@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,7 +41,6 @@ public class PostDetailActivity extends AppCompatActivity {
     private DatabaseReference postRef, commentsRef;
     private List<Comment> commentList;
     private CommentAdapter commentAdapter;
-    private ImageView postImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +48,6 @@ public class PostDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_post_detail);
 
         // Liên kết các view trong layout
-        postImageView = findViewById(R.id.postImageView);
         postTitleTextView = findViewById(R.id.textViewPostTitle);
         postContentTextView = findViewById(R.id.textViewPostContent);
         postAuthorTextView = findViewById(R.id.textViewPostAuthor);
