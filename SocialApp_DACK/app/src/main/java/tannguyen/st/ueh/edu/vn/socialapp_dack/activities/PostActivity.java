@@ -47,34 +47,36 @@ public class PostActivity extends AppCompatActivity {
         userTextView = findViewById(R.id.textViewUser);
         imagePreview = findViewById(R.id.imagePreview);
 
-        // Khởi tạo FirebaseAuth
+        // Khởi tạo SQLiteHelper và FirebaseAuth
+        databaseHelper = new SQLiteHelper(this);
         mAuth = FirebaseAuth.getInstance();
-
         firebaseDatabase = FirebaseDatabase.getInstance().getReference("posts");
 
-        // Kiểm tra xem người dùng đã đăng nhập chưa
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        // Kiểm tra người dùng hiện tại
+        currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String posterName = currentUser.getDisplayName();  // Lấy tên người dùng từ Firebase
-            if (posterName == null || posterName.isEmpty()) {
-                posterName = currentUser.getEmail(); // Dự phòng bằng email nếu không có tên hiển thị
+            String posterName = currentUser.getDisplayName();
+            if (TextUtils.isEmpty(posterName)) {
+                posterName = currentUser.getEmail(); // Dự phòng email nếu thiếu tên
             }
-            // Hiển thị tên người dùng trong TextView
             userTextView.setText("Posted by: " + posterName);
         } else {
             Toast.makeText(this, "Bạn cần đăng nhập để đăng bài.", Toast.LENGTH_SHORT).show();
             finish();
         }
 
-        // Xử lý khi người dùng nhấn nút đăng bài
+        // Xử lý khi nhấn nút "Đăng bài"
         findViewById(R.id.buttonPost).setOnClickListener(v -> createPost());
 
-        // Xử lý khi người dùng nhập URL ảnh
+        // Xử lý hiển thị ảnh preview từ URL
         imageUrlEditText.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 String imageUrl = imageUrlEditText.getText().toString();
                 if (!TextUtils.isEmpty(imageUrl)) {
-                    Picasso.get().load(imageUrl).into(imagePreview);
+                    Picasso.get().load(imageUrl)
+                            .placeholder(R.drawable.placeholder_image)
+                            .error(R.drawable.error_image)
+                            .into(imagePreview);
                     imagePreview.setVisibility(View.VISIBLE);
                 } else {
                     imagePreview.setVisibility(View.GONE);
@@ -82,37 +84,19 @@ public class PostActivity extends AppCompatActivity {
             }
         });
 
-        // Xử lý nút back trong Toolbar
+        // Xử lý Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        toolbar.setNavigationOnClickListener(v -> {
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser != null) {
-                String currentEmail = currentUser.getEmail();
-                if (currentEmail != null && currentEmail.equals("admin@gmail.com")) {
-                    // Nếu người dùng là admin, chuyển đến AdminActivity
-                    Intent intent = new Intent(PostActivity.this, AdminActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    navigateToHomeActivity();
-                }
-            } else {
-                // Trường hợp không có người dùng đăng nhập (nếu cần thiết)
-                Toast.makeText(PostActivity.this, "No user logged in", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
-
-
     private void createPost() {
-        String title = titleEditText.getText().toString();
-        String content = contentEditText.getText().toString();
+        String title = titleEditText.getText().toString().trim();
+        String content = contentEditText.getText().toString().trim();
+        String imageUrl = imageUrlEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(content)) {
             Toast.makeText(this, "Vui lòng điền đầy đủ các trường.", Toast.LENGTH_SHORT).show();
@@ -122,13 +106,12 @@ public class PostActivity extends AppCompatActivity {
         if (currentUser != null) {
             String userId = currentUser.getUid();
             String posterName = currentUser.getDisplayName();
-            if (posterName == null || posterName.isEmpty()) {
+            if (TextUtils.isEmpty(posterName)) {
                 posterName = currentUser.getEmail();
             }
 
             String id = UUID.randomUUID().toString();
             long timestamp = System.currentTimeMillis();
-            String imageUrl = imageUrlEditText.getText().toString().trim();;  // Nếu có URL ảnh thì cần thêm
 
             // Tạo bài viết mới
             Post post = new Post(id, title, content, timestamp, imageUrl, userId, posterName);
@@ -137,12 +120,17 @@ public class PostActivity extends AppCompatActivity {
             firebaseDatabase.child(id).setValue(post).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Toast.makeText(this, "Đăng bài thành công.", Toast.LENGTH_SHORT).show();
+
+                    // Lưu bài viết vào SQLite
+                    databaseHelper.insertOrUpdatePost(post);
+
                     navigateToHomeActivity();
-                    finish();  // Quay lại màn hình chính sau khi đăng bài
                 } else {
                     Toast.makeText(this, "Đăng bài thất bại.", Toast.LENGTH_SHORT).show();
                 }
             });
+        } else {
+            Toast.makeText(this, "Không thể xác thực người dùng.", Toast.LENGTH_SHORT).show();
         }
     }
 
