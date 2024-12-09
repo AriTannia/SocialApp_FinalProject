@@ -71,6 +71,58 @@ public class UsersFragment extends Fragment {
         return view;
     }
 
+    private void processUserFromFirebase(ModelUser user) {
+        if (user == null) return;
+
+        // Lưu ảnh profile
+        if (!TextUtils.isEmpty(user.getImage())) {
+            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", user.getImage(), new ImageAdapter.SaveImageCallback() {
+                @Override
+                public void onImageSaved(String profilePath) {
+                    // Tiếp tục lưu ảnh bìa sau khi ảnh profile được lưu
+                    saveCoverImage(user, profilePath);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e("Firebase-SQLite", "Error saving profile image: ", e);
+                    // Dùng null cho profilePath nếu xảy ra lỗi
+                    saveCoverImage(user, null);
+                }
+            });
+        } else {
+            // Nếu không có ảnh profile, tiếp tục xử lý ảnh bìa
+            saveCoverImage(user, null);
+        }
+    }
+
+    private void saveCoverImage(ModelUser user, String profilePath) {
+        if (!TextUtils.isEmpty(user.getcover())) {
+            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "cover", user.getcover(), new ImageAdapter.SaveImageCallback() {
+                @Override
+                public void onImageSaved(String coverPath) {
+                    // Lưu thông tin user vào SQLite khi cả hai ảnh đã được xử lý
+                    saveUserToSQLite(user, profilePath, coverPath);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e("Firebase-SQLite", "Error saving cover image: ", e);
+                    // Dùng null cho coverPath nếu xảy ra lỗi
+                    saveUserToSQLite(user, profilePath, null);
+                }
+            });
+        } else {
+            // Nếu không có ảnh bìa, lưu thông tin user ngay lập tức
+            saveUserToSQLite(user, profilePath, null);
+        }
+    }
+
+    private void saveUserToSQLite(ModelUser user, String profilePath, String coverPath) {
+        dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), profilePath, coverPath);
+        Log.d("Firebase-SQLite", "User saved to SQLite: UID=" + user.getUid() + ", ProfilePath=" + profilePath + ", CoverPath=" + coverPath);
+    }
+
     private void getAllUsersFromFirebase() {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
@@ -78,62 +130,29 @@ public class UsersFragment extends Fragment {
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userList.clear();
+                userList.clear(); // Xóa danh sách user trước khi thêm mới
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     ModelUser user = ds.getValue(ModelUser.class);
 
                     if (user != null && fUser != null && !user.getUid().equals(fUser.getUid())) {
-                        String imageUrl = user.getImage();
-                        String coverUrl = user.getcover();
-
-                        // Lưu ảnh profile
-                        if (!TextUtils.isEmpty(imageUrl)) {
-                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", imageUrl, new ImageAdapter.SaveImageCallback() {
-                                @Override
-                                public void onImageSaved(String filePath) {
-                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), filePath, user.getcover());
-                                    Log.d("Firebase-SQLite", "Saved profile image path to SQLite: " + filePath);
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.e("Firebase-SQLite", "Error saving profile image: ", e);
-                                }
-                            });
-                        }
-
-                        // Lưu ảnh bìa
-                        if (!TextUtils.isEmpty(coverUrl)) {
-                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "cover", coverUrl, new ImageAdapter.SaveImageCallback() {
-                                @Override
-                                public void onImageSaved(String filePath) {
-                                    dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), user.getImage(), filePath);
-                                    Log.d("Firebase-SQLite", "Saved cover image path to SQLite: " + filePath);
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.e("Firebase-SQLite", "Error saving cover image: ", e);
-                                }
-                            });
-                        }
-
-                        userList.add(user);
+                        processUserFromFirebase(user); // Xử lý từng user
+                        userList.add(user); // Cập nhật danh sách người dùng
                     }
                 }
 
-                updateAdapter();
+                updateAdapter(); // Cập nhật giao diện sau khi hoàn tất
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("FirebaseError", "Lỗi: " + error.getMessage());
                 Toast.makeText(getActivity(), "Lỗi Firebase: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                loadUsersFromSQLite();
+                loadUsersFromSQLite(); // Tải dữ liệu từ SQLite khi Firebase bị lỗi
             }
         });
     }
+
 
     private void loadUsersFromSQLite() {
         Log.d("DataLoad", "Loading users from SQLite...");

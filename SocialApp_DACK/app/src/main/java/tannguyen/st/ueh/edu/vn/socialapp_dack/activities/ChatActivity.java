@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -241,6 +242,8 @@ public class ChatActivity extends AppCompatActivity {
                     if ((message.getSender().equals(myUid) && message.getReceiver().equals(hisUid)) ||
                             (message.getSender().equals(hisUid) && message.getReceiver().equals(myUid))) {
                         messageList.add(message);
+
+                        Log.d("Lỏ quá thầy ơi", String.valueOf(message));
 
                         // Lưu tin nhắn vào SQLite
                         dbHelper.insertMessage(message);
