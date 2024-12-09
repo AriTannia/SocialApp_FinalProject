@@ -262,4 +262,79 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM " + TABLE_POSTS + " WHERE " + COLUMN_USER_ID + " = ?";
         return db.rawQuery(query, new String[]{userId});
     }
+
+    // Lưu avatar của người dùng
+    public void saveUserAvatar(String uid, String avatarPath) {
+        SQLiteDatabase db = getWritableDb();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_UID, uid);
+        values.put(COLUMN_IMAGE, avatarPath);
+
+        if (isUserExists(uid)) {
+            db.update(TABLE_USERS, values, COLUMN_UID + "=?", new String[]{uid});
+        } else {
+            values.put(COLUMN_NAME, "Unknown"); // Thêm giá trị mặc định nếu người dùng chưa tồn tại
+            db.insert(TABLE_USERS, null, values);
+        }
+    }
+
+    // Lấy đường dẫn avatar từ SQLite
+    public String getUserAvatar(String uid) {
+        SQLiteDatabase db = getWritableDb();
+        Cursor cursor = db.query(
+                TABLE_USERS,
+                new String[]{COLUMN_IMAGE},
+                COLUMN_UID + "=?",
+                new String[]{uid},
+                null, null, null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String avatarPath = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE));
+            cursor.close();
+            return avatarPath;
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return null; // Không có avatar
+    }
+
+    // Lưu hoặc cập nhật tên người dùng
+    public void saveUserName(String uid, String name) {
+        SQLiteDatabase db = getWritableDb();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_UID, uid);
+        values.put(COLUMN_NAME, name);
+
+        if (isUserExists(uid)) {
+            db.update(TABLE_USERS, values, COLUMN_UID + "=?", new String[]{uid});
+        } else {
+            db.insert(TABLE_USERS, null, values);
+        }
+    }
+
+    // Lấy tên người dùng từ SQLite
+    public String getUserName(String uid) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(
+                TABLE_USERS,
+                new String[]{COLUMN_NAME},
+                COLUMN_UID + "=?",
+                new String[]{uid},
+                null, null, null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME));
+            cursor.close();
+            return name;
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return null; // Không có tên trong SQLite
+    }
+
+
 }

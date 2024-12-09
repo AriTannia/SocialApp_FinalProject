@@ -1,10 +1,13 @@
 package tannguyen.st.ueh.edu.vn.socialapp_dack.activities;
 
 import android.app.AlertDialog;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
@@ -23,6 +26,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +37,7 @@ import java.util.Locale;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.CommentAdapter;
+import tannguyen.st.ueh.edu.vn.socialapp_dack.databases.SQLiteHelper;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Comment;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
@@ -172,8 +178,8 @@ public class PostDetailActivity extends AppCompatActivity {
                     postAuthorTextView.setText("Posted by: " + post.getPosterName());
 
                     // Hiển thị thời gian đăng bài
-                    long timestamp = post.getTimestamp(); // Lấy timestamp từ Post
-                    String formattedTime = formatTimestamp(timestamp); // Định dạng timestamp
+                    long timestamp = post.getTimestamp();
+                    String formattedTime = formatTimestamp(timestamp);
                     TextView postTimeTextView = findViewById(R.id.postTime);
                     postTimeTextView.setText(formattedTime);
 
@@ -182,14 +188,12 @@ public class PostDetailActivity extends AppCompatActivity {
                         Picasso.get().load(post.getImageUrl()).placeholder(R.drawable.placeholder_image).into(postImageView);
                     }
 
-                    // Lấy avatar từ bảng Users
+                    // Lấy userId của tác giả bài viết
                     String userId = post.getUserId();
                     if (userId != null && !userId.isEmpty()) {
-                        loadUserAvatar(userId);
-                        loadUserName(userId);
+                        loadUserAvatar(userId); // Tải và hiển thị avatar
+                        loadUserName(userId);  // Tải và hiển thị tên
                     }
-
-
                 }
             }
 
@@ -200,20 +204,34 @@ public class PostDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void loadUserName(String userId) {
-        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
+    private void loadUserName(String userId) {
+        SQLiteHelper dbHelper = new SQLiteHelper(this);
+
+        // Lấy tên từ SQLite trước
+        String userName = dbHelper.getUserName(userId);
+        if (userName != null) {
+            // Hiển thị tên từ SQLite
+            postAuthorName.setText(userName);
+            return; // Dừng lại nếu đã có tên
+        }
+
+        // Nếu không có tên trong SQLite, tải từ Firebase
         usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    String name = snapshot.child("name").getValue(String.class); // Lấy giá trị `name`
+                    String name = snapshot.child("name").getValue(String.class);
                     if (name != null) {
-                        TextView postAuthorName = findViewById(R.id.postAuthorName);
-                        postAuthorName.setText(name); // Hiển thị tên vào TextView
+                        postAuthorName.setText(name);
+
+                        // Lưu tên vào SQLite
+                        dbHelper.saveUserName(userId, name);
                     } else {
                         postAuthorName.setText("Unknown Author");
                     }
+                } else {
+                    postAuthorName.setText("Unknown Author");
                 }
             }
 
@@ -225,14 +243,56 @@ public class PostDetailActivity extends AppCompatActivity {
     }
 
 
+
     private void loadUserAvatar(String userId) {
+        SQLiteHelper dbHelper = new SQLiteHelper(this);
+
+        // Lấy avatar từ SQLite trước
+        String avatarPath = dbHelper.getUserAvatar(userId);
+        if (avatarPath != null) {
+            File avatarFile = new File(avatarPath);
+            if (avatarFile.exists()) {
+                Picasso.get().load(avatarFile).placeholder(R.drawable.placeholder_image).into(postAuthorAvatar);
+                return; // Dừng lại nếu đã hiển thị avatar offline
+            }
+        }
+
+        // Nếu không có avatar offline, tải từ Firebase
         usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     String avatarUrl = snapshot.child("image").getValue(String.class);
                     if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                        Picasso.get().load(avatarUrl).placeholder(R.drawable.error_image).into(postAuthorAvatar);
+                        Picasso.get().load(avatarUrl).placeholder(R.drawable.placeholder_image).into(postAuthorAvatar);
+
+                        // Lưu avatar vào bộ nhớ trong
+                        File directory = new File(getApplicationContext().getFilesDir(), "avatars");
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
+
+                        File avatarFile = new File(directory, userId + ".png");
+                        Picasso.get().load(avatarUrl).into(new com.squareup.picasso.Target() {
+                            @Override
+                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                try (FileOutputStream fos = new FileOutputStream(avatarFile)) {
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                                    fos.flush();
+
+                                    // Lưu đường dẫn vào SQLite
+                                    dbHelper.saveUserAvatar(userId, avatarFile.getAbsolutePath());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onBitmapFailed(Exception e, Drawable errorDrawable) {}
+
+                            @Override
+                            public void onPrepareLoad(Drawable placeHolderDrawable) {}
+                        });
                     }
                 }
             }
@@ -243,6 +303,8 @@ public class PostDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private void loadComments() {
         commentsRef.addValueEventListener(new ValueEventListener() {
