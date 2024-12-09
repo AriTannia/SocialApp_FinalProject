@@ -218,7 +218,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM " + TABLE_POSTS, null);
     }
 
-    // Phương thức thêm hoặc cập nhật bài viết
     public void insertOrUpdatePost(Post post) {
         SQLiteDatabase db = getWritableDb();
         ContentValues values = new ContentValues();
@@ -226,18 +225,28 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TITLE, post.getTitle());
         values.put(COLUMN_CONTENT, post.getContent());
         values.put(COLUMN_TIMESTAMP, post.getTimestamp());
-        values.put(COLUMN_IMAGE_URL, post.getImageUrl()); // Thêm đường dẫn hình ảnh
-        values.put(COLUMN_USER_ID, post.getUserId()); // Thêm UID người đăng
-        values.put(COLUMN_POSTER_NAME, post.getPosterName()); // Thêm tên người đăng
+        values.put(COLUMN_IMAGE_URL, post.getImageUrl());
+        values.put(COLUMN_USER_ID, post.getUserId());
+        values.put(COLUMN_POSTER_NAME, post.getPosterName());
 
+        // Kiểm tra bài viết đã tồn tại
         if (isPostExists(post.getId())) {
-            db.update(TABLE_POSTS, values, COLUMN_POST_ID + "=?", new String[]{post.getId()});
+            int rowsAffected = db.update(TABLE_POSTS, values, COLUMN_POST_ID + "=?", new String[]{post.getId()});
+            if (rowsAffected > 0) {
+                Log.d("SQLiteHelper", "Updated post: " + post.getId());
+            } else {
+                Log.e("SQLiteHelper", "Failed to update post: " + post.getId());
+            }
         } else {
-            db.insert(TABLE_POSTS, null, values);
+            long rowId = db.insert(TABLE_POSTS, null, values);
+            if (rowId != -1) {
+                Log.d("SQLiteHelper", "Inserted new post: " + post.getId());
+            } else {
+                Log.e("SQLiteHelper", "Failed to insert post: " + post.getId());
+            }
         }
     }
 
-    // Kiểm tra bài viết đã tồn tại
     public boolean isPostExists(String postId) {
         SQLiteDatabase db = getWritableDb();
         Cursor cursor = db.query(
@@ -253,6 +262,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         }
         return exists;
     }
+
 
     // Phương thức để lấy bài viết của người dùng theo UID
     public Cursor getPostsByUserId(String userId) {
