@@ -156,8 +156,24 @@ public class PostActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        navigateToHomeActivity();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String currentEmail = currentUser.getEmail();
+            if (currentEmail != null && currentEmail.equals("admin@gmail.com")) {
+                // Nếu người dùng là admin, chuyển đến AdminActivity
+                Intent intent = new Intent(PostActivity.this, AdminActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // Nếu không phải admin, chuyển về HomeActivity
+                navigateToHomeActivity();
+            }
+        } else {
+            // Trường hợp không có người dùng đăng nhập (nếu cần thiết)
+            Toast.makeText(PostActivity.this, "No user logged in", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
