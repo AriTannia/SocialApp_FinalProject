@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,10 +58,9 @@ public class AdapterAdminUser extends RecyclerView.Adapter<AdapterAdminUser.Admi
                 Picasso.get()
                         .load(user.getImage())
                         .placeholder(R.drawable.error_image)
-                        .error(R.drawable.error_image)
                         .into(holder.avatarCiv);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("PicassoError", "Error loading image online", e);
             }
         } else {
             // Offline - Use local URI or placeholder

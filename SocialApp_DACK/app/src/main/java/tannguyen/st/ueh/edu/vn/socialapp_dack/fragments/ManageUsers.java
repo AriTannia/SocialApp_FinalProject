@@ -69,7 +69,6 @@ public class ManageUsers extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
-        dbHelper = new SQLiteHelper(getContext());
     }
 
     @Override
@@ -314,7 +313,6 @@ public class ManageUsers extends Fragment {
 
     private void loadUsersFromFirebase() {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -325,58 +323,59 @@ public class ManageUsers extends Fragment {
                     ModelUser user = ds.getValue(ModelUser.class);
 
                     if (user != null && !user.getEmail().equalsIgnoreCase("admin@gmail.com")) {
-                        String imageUrl = user.getImage();
-                        String coverUrl = user.getcover();
+                        Log.d("Firebase-User", "Loaded user: " + user.getName() + ", Email: " + user.getEmail());
+
+                        userList.add(user);
 
                         // Lưu ảnh đại diện
-                        if (!TextUtils.isEmpty(imageUrl)) {
-                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", imageUrl, new ImageAdapter.SaveImageCallback() {
+                        if (!TextUtils.isEmpty(user.getImage())) {
+                            Log.d("Firebase-Image", "Processing profile image: " + user.getImage());
+                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "image", user.getImage(), new ImageAdapter.SaveImageCallback() {
                                 @Override
                                 public void onImageSaved(String filePath) {
-                                    user.setImage(filePath);
+                                    Log.d("Image-Save", "Saved profile image path: " + filePath);
                                     dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), filePath, user.getcover());
-                                    Log.d("Firebase-SQLite", "Saved profile image path: " + filePath);
                                 }
 
                                 @Override
                                 public void onError(Exception e) {
-                                    Log.e("Firebase-SQLite", "Error saving profile image: ", e);
+                                    Log.e("Image-Save", "Error saving profile image", e);
                                 }
                             });
                         }
 
                         // Lưu ảnh bìa
-                        if (!TextUtils.isEmpty(coverUrl)) {
-                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "cover", coverUrl, new ImageAdapter.SaveImageCallback() {
+                        if (!TextUtils.isEmpty(user.getcover())) {
+                            Log.d("Firebase-Cover", "Processing cover image: " + user.getcover());
+                            ImageAdapter.saveImageToInternalStorage(getContext(), user.getUid(), "cover", user.getcover(), new ImageAdapter.SaveImageCallback() {
                                 @Override
                                 public void onImageSaved(String filePath) {
-                                    user.setcover(filePath);
+                                    Log.d("Image-Save", "Saved cover image path: " + filePath);
                                     dbHelper.insertOrUpdateUser(user.getUid(), user.getName(), user.getEmail(), user.getPhone(), user.getImage(), filePath);
-                                    Log.d("Firebase-SQLite", "Saved cover image path: " + filePath);
                                 }
 
                                 @Override
                                 public void onError(Exception e) {
-                                    Log.e("Firebase-SQLite", "Error saving cover image: ", e);
+                                    Log.e("Image-Save", "Error saving cover image", e);
                                 }
                             });
                         }
-
-                        userList.add(user);
                     }
                 }
 
-                // Hiển thị danh sách người dùng
                 AdapterAdminUser adapter = new AdapterAdminUser(getActivity(), userList, ManageUsers.this);
                 recyclerViewUsers.setAdapter(adapter);
+                Log.d("User-List", "Number of users loaded: " + userList.size());
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(getActivity(), "Lỗi tải danh sách: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Firebase-Error", "Error loading user list: ", error.toException());
             }
         });
     }
+
 
     @SuppressLint("Range")
     private void loadUsersFromSQLite() {
