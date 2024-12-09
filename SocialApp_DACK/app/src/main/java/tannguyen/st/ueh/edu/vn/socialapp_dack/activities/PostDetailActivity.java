@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,10 +21,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import tannguyen.st.ueh.edu.vn.socialapp_dack.R;
 import tannguyen.st.ueh.edu.vn.socialapp_dack.adapters.CommentAdapter;
@@ -32,13 +37,14 @@ import tannguyen.st.ueh.edu.vn.socialapp_dack.models.Post;
 
 public class PostDetailActivity extends AppCompatActivity {
 
-    private TextView postTitleTextView, postContentTextView, postAuthorTextView;
+    private TextView postTitleTextView, postContentTextView, postAuthorTextView, postAuthorName;
+    private ImageView postImageView, postAuthorAvatar;
     private RecyclerView recyclerViewComments;
     private EditText editTextComment;
     private Button buttonSendComment;
 
     private String currentPostId;
-    private DatabaseReference postRef, commentsRef;
+    private DatabaseReference postRef, commentsRef, usersRef;
     private List<Comment> commentList;
     private CommentAdapter commentAdapter;
 
@@ -47,7 +53,20 @@ public class PostDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
 
+        // Ánh xạ Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Hiển thị nút back
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back_arrow); // Đặt icon cho nút Back (nếu có)
+        }
+
         // Liên kết các view trong layout
+        postImageView = findViewById(R.id.postImageView);
+        postAuthorAvatar = findViewById(R.id.postAuthorAvatar);
+        postAuthorName = findViewById(R.id.postAuthorName);
         postTitleTextView = findViewById(R.id.textViewPostTitle);
         postContentTextView = findViewById(R.id.textViewPostContent);
         postAuthorTextView = findViewById(R.id.textViewPostAuthor);
@@ -66,6 +85,7 @@ public class PostDetailActivity extends AppCompatActivity {
         // Firebase references
         postRef = FirebaseDatabase.getInstance().getReference("posts").child(currentPostId);
         commentsRef = FirebaseDatabase.getInstance().getReference("comments").child(currentPostId);
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
         // Danh sách bình luận
         commentList = new ArrayList<>();
@@ -94,7 +114,17 @@ public class PostDetailActivity extends AppCompatActivity {
 
         // Xử lý khi nhấn nút gửi bình luận
         buttonSendComment.setOnClickListener(v -> postComment());
+
+        // Xử lý sự kiện nút Back
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
+
+    private String formatTimestamp(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+        Date date = new Date(timestamp);
+        return sdf.format(date);
+    }
+
     private void editComment(Comment comment) {
         // Hiển thị hộp thoại để chỉnh sửa bình luận
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -140,12 +170,76 @@ public class PostDetailActivity extends AppCompatActivity {
                     postTitleTextView.setText(post.getTitle());
                     postContentTextView.setText(post.getContent());
                     postAuthorTextView.setText("Posted by: " + post.getPosterName());
+
+                    // Hiển thị thời gian đăng bài
+                    long timestamp = post.getTimestamp(); // Lấy timestamp từ Post
+                    String formattedTime = formatTimestamp(timestamp); // Định dạng timestamp
+                    TextView postTimeTextView = findViewById(R.id.postTime);
+                    postTimeTextView.setText(formattedTime);
+
+                    // Hiển thị ảnh bài viết nếu có
+                    if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
+                        Picasso.get().load(post.getImageUrl()).placeholder(R.drawable.placeholder_image).into(postImageView);
+                    }
+
+                    // Lấy avatar từ bảng Users
+                    String userId = post.getUserId();
+                    if (userId != null && !userId.isEmpty()) {
+                        loadUserAvatar(userId);
+                        loadUserName(userId);
+                    }
+
+
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(PostDetailActivity.this, "Failed to load post details", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadUserName(String userId) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String name = snapshot.child("name").getValue(String.class); // Lấy giá trị `name`
+                    if (name != null) {
+                        TextView postAuthorName = findViewById(R.id.postAuthorName);
+                        postAuthorName.setText(name); // Hiển thị tên vào TextView
+                    } else {
+                        postAuthorName.setText("Unknown Author");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PostDetailActivity.this, "Failed to load user name", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+    private void loadUserAvatar(String userId) {
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String avatarUrl = snapshot.child("image").getValue(String.class);
+                    if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                        Picasso.get().load(avatarUrl).placeholder(R.drawable.error_image).into(postAuthorAvatar);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PostDetailActivity.this, "Failed to load user avatar", Toast.LENGTH_SHORT).show();
             }
         });
     }
