@@ -1,1 +1,77 @@
-✨ Dự án Ứng dụng Di động SADACK ✨Giới thiệuỨng dụng SADACK (Sharing and Discussing, Always Caring & Kind) là một nền tảng mạng xã hội di động được thiết kế nhằm tạo ra một cộng đồng thân thiện, nơi mọi người có thể chia sẻ, kết nối và nhận hỗ trợ khi cần. Dự án đặc biệt nhấn mạnh vào việc cung cấp một không gian an toàn để chia sẻ cảm xúc, tăng cường tương tác cá nhân và hỗ trợ sức khỏe tinh thần cho người dùng trong bối cảnh các vấn đề tâm lý ngày càng phổ biến.Tính cấp thiết của đề tàiTrong bối cảnh sức khỏe tâm thần ngày càng được quan tâm, SADACK ra đời để đáp ứng nhu cầu về các nền tảng hỗ trợ tâm lý trực tuyến. Ứng dụng giúp người dùng xây dựng mối quan hệ với những người có chung hoàn cảnh và cung cấp các tính năng hỗ trợ kiểm soát cảm xúc, cải thiện sức khỏe tinh thần.🛠️ Công nghệ sử dụngNgôn ngữ lập trình: JavaBộ công cụ phát triển: Android SDKMôi trường phát triển tích hợp (IDE): Android StudioBackend & Dịch vụ đám mây: Firebase (Authentication, Realtime Database, Cloud Storage)Cơ sở dữ liệu cục bộ: SQLite🚀 Tính năng chínhỨng dụng SADACK cung cấp các tính năng cốt lõi cho cả người dùng thông thường và quản trị viên (Admin):Người dùngXác thực:Đăng nhập (Email/Mật khẩu, Google Sign-In)Đăng ký tài khoản mớiQuên mật khẩu (Khôi phục qua email)Quản lý thông tin cá nhân:Xem hồ sơ cá nhânCập nhật tên người dùngCập nhật emailCập nhật ảnh đại diệnCập nhật ảnh bìaQuản lý bài viết:Xem danh sách bài viết (Trang chủ)Thêm bài viết mớiCập nhật bài viết cá nhânXóa bài viết cá nhânXem chi tiết bài viếtQuản lý tương tác:Thích bài viếtThêm nhận xét (bình luận) vào bài viếtCập nhật nhận xét cá nhânXóa nhận xét cá nhânNhắn tin (Chat):Trò chuyện trực tiếp với người dùng khácXem danh sách các cuộc trò chuyệnXem chi tiết cuộc trò chuyện và lịch sử tin nhắnGửi và nhận tin nhắnAdminQuản lý người dùng:Xem danh sách tất cả người dùngThêm tài khoản người dùng mớiChỉnh sửa thông tin người dùngXóa tài khoản người dùngQuản lý hồ sơ Admin:Xem thông tin hồ sơ AdminChỉnh sửa thông tin hồ sơ Admin (tên, email, số điện thoại, ảnh đại diện, ảnh bìa)📊 Phân tích và Thiết kế Hệ thốngDự án đã được phân tích và thiết kế chi tiết, bao gồm:Sơ đồ Luồng Công việc (Workflow Diagrams): Minh họa chi tiết các quy trình như Đăng nhập, Đăng ký, Quên mật khẩu, Quản lý thông tin cá nhân, Quản lý bài viết, Quản lý nhận xét, Trò chuyện, và Quản lý người dùng (Admin).Sơ đồ Phân rã Chức năng (Business Functional Diagrams): Thể hiện cấu trúc chức năng cho cả người dùng thông thường và Quản trị viên.Sơ đồ Lớp (Class Diagram): Mô tả cấu trúc các lớp chính trong hệ thống và mối quan hệ giữa chúng.🖼️ Thiết kế Giao diệnGiao diện người dùng được thiết kế trực quan và thân thiện, bao gồm các màn hình chính:Giao diện Đăng nhậpGiao diện Đăng kýGiao diện Trang chủGiao diện Liên hệGiao diện Trang chatGiao diện Trang cá nhânGiao diện Trang Post (Tạo bài viết mới)Giao diện Trang chi tiết bài viết (Xem bài viết và bình luận)Giao diện Quản lý tài khoản (Admin)Giao diện Trang cá nhân (Admin)Giao diện Trang thêm tài khoản (Admin)(Tham khảo các hình ảnh minh họa giao diện trong tài liệu gốc)🗄️ Xây dựng Cơ sở dữ liệuHệ thống sử dụng kết hợp Firebase Realtime Database và SQLite để lưu trữ dữ liệu.Firebase Realtime Database: Lưu trữ dữ liệu chính và đồng bộ thời gian thực.SQLite: Hỗ trợ lưu trữ dữ liệu cục bộ cho chế độ offline.Các bảng dữ liệu chính bao gồm:User: Lưu trữ thông tin người dùng (ID, Name, Email, Phone, Password, Image, Cover).Post: Lưu trữ thông tin bài viết (ID, Title, Content, TimeStamp, ImageUrl, UserId).Message: Lưu trữ thông tin tin nhắn (ID, Sender, Receiver, Message, TimeStamp, IsSeen).Comment: Lưu trữ thông tin bình luận (ID, PostID, UserID, UserName, Content, TimeStamp).(Tham khảo Sơ đồ Quan hệ Cơ sở dữ liệu và các truy vấn mẫu trong tài liệu gốc)🏗️ Cấu trúc Ứng dụngCấu trúc mã nguồn được tổ chức khoa học trong Android Studio:java/: Chứa mã nguồn Java, được phân chia thành các gói (activities, adapters, databases, fragments, models, utils).res/: Chứa tài nguyên (hình ảnh, layout XML, menu XML).manifests/: Chứa tệp AndroidManifest.xml khai báo các thành phần ứng dụng và quyền.Ứng dụng tích hợp Firebase bằng cách cấu hình tệp google-services.json và thêm các thư viện cần thiết trong tệp build.gradle.kts. Quyền truy cập Internet được khai báo trong AndroidManifest.xml.⚙️ Quy trình thực thi (Workflow)Tài liệu mô tả chi tiết các quy trình thực thi cho các tác vụ quan trọng như:Quy trình Đăng ký tài khoảnQuy trình Đăng nhập tài khoảnQuy trình Lấy lại mật khẩuQuy trình Post Bài ĐăngQuy trình Tương tác với bài post (Thích, Bình luận, Chỉnh sửa, Xóa)Quy trình Chỉnh sửa thông tin tài khoảnQuy trình Nhắn tin với các tài khoản khácQuy trình Quản lý thông tin người dùng (Admin)(Tham khảo chi tiết từng bước và hình ảnh minh họa trong Chương 6 của tài liệu gốc)👥 Đội ngũ phát triểnDự án được thực hiện bởi nhóm các thành viên với sự phân công công việc cụ thể:Thành ViênNhiệm VụNguyễn Hoàng Minh TấnCoding: Trang đăng nhập, đăng ký, quên mật khẩu, profile, danh sách người dùng chat. Báo cáo: Ch. I, II (2.1.1-2.1.6), V (5.1.1).Đoàn Thanh LâmCoding: Trang chat và chi tiết chat. Báo cáo: Ch. II (2.1.7-2.1.8, 2.2, 2.3), IV (4.1, 4.2), V (5.1.1).Dương Lâm Gia KiệtCoding: Kết nối Firebase/SQLite với Profile, chat, post. Báo cáo: Ch. III (3.1-3.6), IV (4.3), V (5.1.1).Phạm TrungCoding: Trang chủ, trang post (tiêu đề, nội dung), trang comment. Báo cáo: Ch. III, V (5.1.1).Nguyễn Tuấn DũngCoding: Trang Admin, trang post (hình ảnh). Báo cáo: Ch. VI, V (5.3.1.8, 5.3.2.1, 5.3.2.2).🔗 Liên kếtMã nguồn (Github): [Chưa có link - Cần cập nhật]📚 Tài liệu tham khảoDataReportal. Digital 2023: Global Overview Report.World Health Organization (WHO). Mental health statistics.
+# ✨ Dự án Ứng dụng Di động SADACK ✨
+
+## Giới thiệu
+
+**SADACK** (Sharing and Discussing, Always Caring & Kind) là một ứng dụng mạng xã hội di động nhằm tạo ra một cộng đồng thân thiện, nơi người dùng có thể chia sẻ cảm xúc, kết nối và nhận được sự hỗ trợ khi cần. SADACK tập trung vào việc tăng cường sức khoẻ tinh thần và tương tác cá nhân trong bối cảnh các vấn đề tâm lý ngày càng gia tăng.
+
+## ❤️ Tính cấp thiết
+
+Sức khoẻ tinh thần là vấn đề ngày càng được quan tâm. SADACK ra đời nhằm cung cấp một nền tảng kỹ thuật để hỗ trợ người dùng chia sẻ, kiểm soát cảm xúc và xây dựng mối quan hệ với những người đồng cảm.
+
+## 🛠️ Công nghệ sử dụng
+
+* **Ngôn ngữ:** Java
+* **SDK:** Android SDK
+* **IDE:** Android Studio
+* **Backend & Cloud:** Firebase (Authentication, Realtime Database, Cloud Storage)
+* **CSDL cục bộ:** SQLite
+
+## 🚀 Tính năng chính
+
+### ✨ Dành cho người dùng
+
+**Xác thực:**
+
+* Đăng nhập (Email/Mật khẩu, Google Sign-In)
+* Đăng ký tài khoản
+* Khôi phục mật khẩu qua email
+
+**Quản lý hồ sơ:**
+
+* Xem & chỉnh sửa tên, email, ảnh đại diện, ảnh bìa
+
+**Bài viết:**
+
+* Xem danh sách bài viết (Trang chủ)
+* Tạo/Sửa/Xóa bài viết cá nhân
+* Xem chi tiết bài viết
+
+**Tương tác:**
+
+* Like, bình luận, sửa/xóa bình luận
+
+**Nhắn tin:**
+
+* Chat trực tiếp, danh sách & chi tiết tin nhắn
+
+### 📄 Dành cho Quản trị viên (Admin)
+
+* Quản lý người dùng: Xem danh sách, thêm, chỉnh sửa, xóa tài khoản
+* Quản lý hồ sơ Admin: Thay đổi thông tin, ảnh đại diện, ảnh bìa
+
+## 🗄️ Cơ sở dữ liệu
+
+* **Firebase Realtime Database:** Dữ liệu chính, đồng bộ theo thời gian thật
+* **SQLite:** Lưu trữ dữ liệu offline
+
+**Bảng dữ liệu chính:**
+
+* User (ID, Name, Email, Phone, Password, Image, Cover)
+* Post (ID, Title, Content, TimeStamp, ImageUrl, UserId)
+* Message (ID, Sender, Receiver, Message, TimeStamp, IsSeen)
+* Comment (ID, PostID, UserID, UserName, Content, TimeStamp)
+
+## 👥 Nhóm phát triển
+
+| Thành viên            | Nhiệm vụ chính                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| Nguyễn Hoàng Minh Tấn | Coding: Đăng nhập/Đăng ký/Profile, chat list. Báo cáo: Ch. I, II (2.1.1-2.1.6), V (5.1.1)  |
+| Đoàn Thanh Lâm        | Coding: Chat chi tiết. Báo cáo: II (2.1.7-2.1.8, 2.2, 2.3), IV (4.1, 4.2), V (5.1.1)       |
+| Dương Lâm Gia Kiệt    | Coding: Firebase/SQLite - Profile, chat, post. Báo cáo: III (3.1-3.6), IV (4.3), V (5.1.1) |
+| Phạm Trung            | Coding: Trang chủ, post (tiêu đề, nội dung), comment. Báo cáo: III, V (5.1.1)              |
+| Nguyễn Tuấn Dũng      | Coding: Admin, post (hình ảnh). Báo cáo: VI, V (5.3.1.8, 5.3.2.1, 5.3.2.2)                 |
+
+## 📚 Tài liệu tham khảo
+
+* DataReportal. *Digital 2023: Global Overview Report*
+* World Health Organization (WHO). *Mental health statistics*
